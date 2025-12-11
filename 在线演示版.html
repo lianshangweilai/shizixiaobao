@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儿童识字小报生成器 - 在线演示</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+            --info-color: #4299e1;
+            --light-color: #f7fafc;
+            --dark-color: #2d3748;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* 顶部导航 */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+
+        .demo-badge {
+            background: var(--warning-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin-left: 10px;
+        }
+
+        /* 主要内容区 */
+        .main-container {
+            padding-top: 100px;
+            padding-bottom: 50px;
+        }
+
+        /* 左侧面板 */
+        .control-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        /* 表单样式 */
+        .form-label {
+            font-weight: 500;
+            color: var(--dark-color);
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* 按钮样式 */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, var(--info-color), #3182ce);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 500;
+        }
+
+        /* 右侧结果区 */
+        .result-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 600px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-placeholder {
+            text-align: center;
+            color: #a0aec0;
+        }
+
+        .result-placeholder i {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            color: #cbd5e0;
+        }
+
+        /* 场景选择卡片 */
+        .scene-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .scene-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .scene-card.active {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+
+        .scene-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        /* 提示词预览 */
+        .prompt-preview {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* 词汇展示 */
+        .vocabulary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .vocab-item {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .vocab-item:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #667eea25, #764ba225);
+        }
+
+        .vocab-chinese {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+
+        .vocab-pinyin {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        /* 加载动画 */
+        .loading-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 示例图片展示 */
+        .demo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .demo-item {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .demo-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .demo-image {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .demo-info {
+            padding: 15px;
+        }
+
+        .demo-title {
+            font-weight: bold;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+
+        .demo-desc {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        /* 页脚 */
+        footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 40px 0;
+            margin-top: 80px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .control-panel {
+                position: relative;
+                top: 0;
+                margin-bottom: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar fixed-top">
+        <div class="container">
+            <span class="navbar-brand">
+                <i class="fas fa-book-open"></i>
+                儿童识字小报生成器
+                <span class="demo-badge">
+                    <i class="fas fa-eye"></i> 在线演示
+                </span>
+            </span>
+            <div class="d-flex align-items-center">
+                <span class="text-muted me-3">
+                    <i class="fas fa-info-circle"></i> 演示版本 - 无需安装
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="container main-container">
+        <div class="row">
+            <!-- 左侧控制面板 -->
+            <div class="col-lg-4">
+                <div class="control-panel">
+                    <!-- 场景选择 -->
+                    <div class="mb-4">
+                        <div class="section-title">
+                            <i class="fas fa-map"></i> 选择场景
+                        </div>
+                        <div class="row g-3" id="sceneGrid">
+                            <!-- 场景卡片将由JavaScript生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 标题输入 -->
+                    <div class="mb-4">
+                        <div class="section-title">
+                            <i class="fas fa-heading"></i> 小报标题
+                        </div>
+                        <input type="text" class="form-control" id="titleInput"
+                               placeholder="例如：走进超市">
+                        <div class="form-text">
+                            <i class="fas fa-lightbulb text-warning"></i>
+                            建议使用6-8个字的标题
+                        </div>
+                    </div>
+
+                    <!-- 参数设置 -->
+                    <div class="mb-4">
+                        <div class="section-title">
+                            <i class="fas fa-sliders-h"></i> 生成参数
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label">宽高比</label>
+                                <select class="form-select" id="ratioSelect">
+                                    <option value="3:4">3:4 (A4竖版)</option>
+                                    <option value="1:1">1:1 (正方形)</option>
+                                    <option value="4:3">4:3 (横向)</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">分辨率</label>
+                                <select class="form-select" id="resolutionSelect">
+                                    <option value="2K">2K (推荐)</option>
+                                    <option value="1K">1K (快速)</option>
+                                    <option value="4K">4K (高清)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-info" onclick="showPromptPreview()">
+                            <i class="fas fa-eye"></i> 预览提示词
+                        </button>
+                        <button class="btn btn-primary btn-lg" onclick="generateDemo()">
+                            <i class="fas fa-magic"></i> 生成演示海报
+                        </button>
+                    </div>
+
+                    <!-- 提示信息 -->
+                    <div class="alert alert-info mt-4">
+                        <h6><i class="fas fa-info-circle"></i> 演示说明</h6>
+                        <small>
+                            这是演示版本，展示生成效果。
+                            实际生成需要本地运行并配置API Key。
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧结果区 -->
+            <div class="col-lg-8">
+                <div class="result-panel" id="resultPanel">
+                    <div class="result-placeholder">
+                        <i class="fas fa-image"></i>
+                        <h4>准备生成识字小报</h4>
+                        <p>选择场景和标题，点击"生成演示海报"查看效果</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 示例展示 -->
+        <div class="mt-5">
+            <h3 class="text-center mb-4">生成示例</h3>
+            <div class="demo-gallery">
+                <div class="demo-item" onclick="showExample('超市', '走进超市')">
+                    <div class="demo-image">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="demo-info">
+                        <div class="demo-title">走进超市</div>
+                        <div class="demo-desc">超市场景 - 20个常用词汇</div>
+                    </div>
+                </div>
+                <div class="demo-item" onclick="showExample('医院', '快乐医院')">
+                    <div class="demo-image">
+                        <i class="fas fa-hospital"></i>
+                    </div>
+                    <div class="demo-info">
+                        <div class="demo-title">快乐医院</div>
+                        <div class="demo-desc">医院场景 - 18个医疗词汇</div>
+                    </div>
+                </div>
+                <div class="demo-item" onclick="showExample('公园', '美丽的公园')">
+                    <div class="demo-image">
+                        <i class="fas fa-tree"></i>
+                    </div>
+                    <div class="demo-info">
+                        <div class="demo-title">美丽的公园</div>
+                        <div class="demo-desc">公园场景 - 16个自然词汇</div>
+                    </div>
+                </div>
+                <div class="demo-item" onclick="showExample('动物园', '动物朋友们')">
+                    <div class="demo-image">
+                        <i class="fas fa-paw"></i>
+                    </div>
+                    <div class="demo-info">
+                        <div class="demo-title">动物朋友们</div>
+                        <div class="demo-desc">动物园场景 - 22个动物词汇</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示词预览模态框 -->
+    <div class="modal fade" id="promptModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-code"></i> AI提示词预览
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="prompt-preview" id="promptContent"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container text-center">
+            <h5 class="mb-3">儿童识字小报生成器</h5>
+            <p class="mb-3">
+                基于 Kie AI Nano Banana Pro API<br>
+                适合5-9岁儿童的中文识字学习工具
+            </p>
+            <div class="row justify-content-center text-start" style="max-width: 600px;">
+                <div class="col-md-6">
+                    <h6>完整版功能</h6>
+                    <ul>
+                        <li>真实AI生成高质量图片</li>
+                        <li>支持自定义场景词汇</li>
+                        <li>本地运行，保护隐私</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>如何获取完整版</h6>
+                    <ul>
+                        <li>下载源码到本地</li>
+                        <li>配置Python环境</li>
+                        <li>申请API Key</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <small class="text-muted">
+                演示版本 © 2024 |
+                <a href="https://github.com" class="text-white-50">获取源码</a>
+            </small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 场景数据
+        const scenes = [
+            { id: 'market', name: '超市', icon: 'fa-shopping-cart', color: '#48bb78' },
+            { id: 'hospital', name: '医院', icon: 'fa-hospital', color: '#ed8936' },
+            { id: 'park', name: '公园', icon: 'fa-tree', color: '#38b2ac' },
+            { id: 'school', name: '学校', icon: 'fa-school', color: '#9f7aea' },
+            { id: 'zoo', name: '动物园', icon: 'fa-paw', color: '#f56565' },
+            { id: 'station', name: '火车站', icon: 'fa-train', color: '#4299e1' }
+        ];
+
+        // 词汇数据（模拟）
+        const vocabularies = {
+            '超市': [
+                { pinyin: 'shōu yín yuán', chinese: '收银员' },
+                { pinyin: 'huò jià', chinese: '货架' },
+                { pinyin: 'tuī chē', chinese: '推车' },
+                { pinyin: 'píng guǒ', chinese: '苹果' },
+                { pinyin: 'niú nǎi', chinese: '牛奶' },
+                { pinyin: 'miàn bāo', chinese: '面包' }
+            ],
+            '医院': [
+                { pinyin: 'yī shēng', chinese: '医生' },
+                { pinyin: 'hù shì', chinese: '护士' },
+                { pinyin: 'yào pǐn', chinese: '药品' },
+                { pinyin: 'bìng rén', chinese: '病人' },
+                { pinyin: 'yì zhēn', chinese: '针' },
+                { pinyin: 'tǐ wēn jì', chinese: '体温计' }
+            ],
+            '公园': [
+                { pinyin: 'huā', chinese: '花' },
+                { pinyin: 'shù', chinese: '树' },
+                { pinyin: 'qiū qiān', chinese: '秋千' },
+                { pinyin: 'huá tī', chinese: '滑梯' },
+                { pinyin: 'cǎo dì', chinese: '草地' },
+                { pinyin: 'niǎo', chinese: '鸟' }
+            ]
+        };
+
+        let selectedScene = null;
+
+        // 初始化场景选择
+        function initScenes() {
+            const grid = document.getElementById('sceneGrid');
+            scenes.forEach(scene => {
+                const col = document.createElement('div');
+                col.className = 'col-6';
+                col.innerHTML = `
+                    <div class="scene-card" onclick="selectScene('${scene.name}', this)">
+                        <div class="scene-icon" style="color: ${scene.color}">
+                            <i class="fas ${scene.icon}"></i>
+                        </div>
+                        <div>${scene.name}</div>
+                    </div>
+                `;
+                grid.appendChild(col);
+            });
+        }
+
+        // 选择场景
+        function selectScene(sceneName, element) {
+            document.querySelectorAll('.scene-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            element.classList.add('active');
+            selectedScene = sceneName;
+        }
+
+        // 显示提示词预览
+        function showPromptPreview() {
+            if (!selectedScene) {
+                alert('请先选择一个场景');
+                return;
+            }
+
+            const title = document.getElementById('titleInput').value || '识字小报';
+            const prompt = generatePrompt(selectedScene, title);
+
+            document.getElementById('promptContent').textContent = prompt;
+            const modal = new bootstrap.Modal(document.getElementById('promptModal'));
+            modal.show();
+        }
+
+        // 生成提示词（简化版）
+        function generatePrompt(scene, title) {
+            return `请生成一张儿童识字小报《${scene}》，竖版 A4，学习小报版式，适合 5–9 岁孩子 认字与看图识物。
+
+# 一、小报标题区（顶部）
+
+**顶部居中大标题**：《${title}》
+* **风格**：十字小报 / 儿童学习报感
+* **文本要求**：大字、醒目、卡通手写体、彩色描边
+
+# 二、小报主体（中间主画面）
+
+画面中心是一幅 **卡通插画风的「${scene}」场景**：
+* **整体气氛**：明亮、温暖、积极
+* **构图**：物体边界清晰，方便对应文字，不要过于拥挤。
+
+# 三、必画物体与识字清单
+
+**请务必在画面中清晰绘制以下物体，并为其预留贴标签的位置：**
+
+${vocabularies[scene] ? vocabularies[scene].map(v =>
+    `**${v.chinese}** (${v.pinyin})`
+).join('\n') : ''}
+
+# 四、识字标注规则
+
+对上述清单中的物体，贴上中文识字标签：
+* **格式**：两行制（第一行拼音带声调，第二行简体汉字）
+* **样式**：彩色小贴纸风格，白底黑字
+
+# 五、画风参数
+* **风格**：儿童绘本风 + 识字小报风
+* **色彩**：高饱和、明快、温暖`;
+        }
+
+        // 生成演示海报
+        function generateDemo() {
+            if (!selectedScene) {
+                alert('请先选择一个场景');
+                return;
+            }
+
+            const title = document.getElementById('titleInput').value || '识字小报';
+
+            // 显示加载动画
+            const resultPanel = document.getElementById('resultPanel');
+            resultPanel.innerHTML = `
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                    <h4>正在生成识字小报...</h4>
+                    <p class="text-muted">AI正在努力创作中，请稍候...</p>
+                    <div class="progress mt-3" style="width: 300px; margin: 0 auto;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            `;
+
+            // 模拟生成过程
+            setTimeout(() => {
+                showResult(selectedScene, title);
+            }, 2000);
+        }
+
+        // 显示生成结果
+        function showResult(scene, title) {
+            const resultPanel = document.getElementById('resultPanel');
+            const vocabList = vocabularies[scene] || [];
+
+            resultPanel.innerHTML = `
+                <div class="w-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">生成结果</h4>
+                        <span class="badge bg-success">
+                            <i class="fas fa-check"></i> 演示完成
+                        </span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="text-center p-4" style="background: linear-gradient(135deg, #667eea15, #764ba215); border-radius: 15px;">
+                                <div style="width: 300px; height: 400px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                                    <h3 style="color: #667eea; text-align: center; margin-bottom: 20px;">${title}</h3>
+                                    <div style="text-align: center; color: #cbd5e0; font-size: 3rem; margin: 100px 0;">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                    <p style="text-align: center; color: #718096; font-size: 0.9rem;">
+                                        AI生成的识字小报插图
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="mb-3">包含词汇 (${vocabList.length}个)</h5>
+                            <div class="vocabulary-grid">
+                                ${vocabList.map(v => `
+                                    <div class="vocab-item">
+                                        <div class="vocab-chinese">${v.chinese}</div>
+                                        <div class="vocab-pinyin">${v.pinyin}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="alert alert-success mt-3">
+                                <i class="fas fa-check-circle"></i>
+                                <strong>演示完成！</strong><br>
+                                <small>这是演示版本，完整版将生成高质量图片</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 显示示例
+        function showExample(scene, title) {
+            selectScene(scene, document.querySelector(`.scene-card:contains('${scene}')`));
+            document.getElementById('titleInput').value = title;
+            generateDemo();
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initScenes();
+        });
+    </script>
+</body>
+</html>

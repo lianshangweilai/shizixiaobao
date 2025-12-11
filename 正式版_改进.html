@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儿童识字小报生成器 - 改进版</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+            --info-color: #4299e1;
+            --light-color: #f7fafc;
+            --dark-color: #2d3748;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+
+        .version-badge {
+            background: var(--success-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin-left: 10px;
+        }
+
+        .main-container {
+            padding-top: 100px;
+            padding-bottom: 50px;
+        }
+
+        .control-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        .scene-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            margin-bottom: 15px;
+        }
+
+        .scene-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .scene-card.active {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+
+        .scene-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .result-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 600px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 3px solid #e2e8f0;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+            color: white;
+        }
+
+        .view-btn {
+            background: linear-gradient(135deg, var(--info-color), #3182ce);
+            color: white;
+        }
+
+        .api-config-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--primary-color);
+        }
+
+        .mode-btn.active {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .alert-custom {
+            border-left: 4px solid var(--primary-color);
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .vocab-item {
+            background: linear-gradient(135deg, #fff4b515, #ffe4b5);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid var(--primary-color);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vocab-item::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .vocab-item:hover {
+            transform: scale(1.05);
+        }
+
+        .vocab-item:hover::before {
+            opacity: 0.1;
+        }
+
+        .vocab-chinese {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .vocab-pinyin {
+            font-size: 0.95rem;
+            color: #666;
+            position: relative;
+            z-index: 1;
+        }
+
+        .scene-illustration {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 250px;
+            margin: 20px 0;
+            background: linear-gradient(135deg, #f0f8ff, #e6f3ff);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .scene-element {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .scene-element:hover {
+            transform: translateY(-3px);
+        }
+
+        .scene-element-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 40px 0;
+            margin-top: 80px;
+        }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                position: relative;
+                top: 0;
+                margin-bottom: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar fixed-top">
+        <div class="container">
+            <span class="navbar-brand">
+                <i class="fas fa-book-open"></i>
+                儿童识字小报生成器
+                <span class="version-badge">
+                    <i class="fas fa-check"></i> 改进版
+                </span>
+            </span>
+            <div class="d-flex align-items-center">
+                <span id="modeStatus" class="badge bg-warning">
+                    <i class="fas fa-play"></i> 演示模式
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- API配置区域 -->
+    <div class="container" style="margin-top: 80px;">
+        <div class="api-config-section" id="apiConfig" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-1">
+                        <i class="fas fa-key"></i> API Key 配置
+                    </h5>
+                    <small class="text-muted">获取 API Key: <a href="https://kie.ai/api-key" target="_blank">https://kie.ai/api-key</a></small>
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="toggleApiConfig()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Kie AI API Key</label>
+                <input type="password" class="form-control" id="apiKeyInput"
+                       placeholder="请输入您的API Key">
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="demoModeCheck">
+                <label class="form-check-label" for="demoModeCheck">
+                    使用演示模式（无需API Key，生成示例图片）
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="container main-container">
+        <div class="row">
+            <!-- 左侧控制面板 -->
+            <div class="col-lg-4">
+                <div class="control-panel">
+                    <!-- 场景选择 -->
+                    <div class="mb-4">
+                        <div class="section-title">
+                            <i class="fas fa-map"></i> 选择场景
+                        </div>
+                        <div id="sceneGrid">
+                            <!-- 场景卡片将由JavaScript生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 标题输入 -->
+                    <div class="mb-4">
+                        <div class="section-title">
+                            <i class="fas fa-heading"></i> 小报标题
+                        </div>
+                        <input type="text" class="form-control" id="titleInput"
+                               placeholder="例如：走进超市" value="走进超市">
+                        <div class="form-text">
+                            <i class="fas fa-lightbulb text-warning"></i>
+                            建议使用6-8个字的标题
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-info" onclick="showPromptPreview()">
+                            <i class="fas fa-eye"></i> 预览提示词
+                        </button>
+                        <button class="btn btn-primary btn-lg" onclick="generateImage()">
+                            <i class="fas fa-magic"></i> 生成识字小报
+                        </button>
+                    </div>
+
+                    <!-- API状态显示 -->
+                    <div class="alert alert-success mt-3" id="apiStatus">
+                        <i class="fas fa-check-circle"></i>
+                        <small id="apiStatusText">演示模式运行中</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧结果区 -->
+            <div class="col-lg-8">
+                <div class="result-panel" id="resultPanel">
+                    <div class="text-center" style="padding: 100px 0;">
+                        <i class="fas fa-image fa-5x text-muted mb-4"></i>
+                        <h4>准备生成识字小报</h4>
+                        <p class="text-muted">选择场景和标题，点击"生成识字小报"开始创作</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示词预览模态框 -->
+    <div class="modal fade" id="promptModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-code"></i> AI提示词
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="promptContent" class="prompt-preview"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="copyPrompt()">
+                        <i class="fas fa-copy"></i> 复制
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container text-center">
+            <h5 class="mb-3">儿童识字小报生成器</h5>
+            <p class="mb-3">
+                基于 Kie AI Nano Banana Pro API<br>
+                适合5-9岁儿童的中文识字学习工具
+            </p>
+            <div class="row justify-content-center text-start" style="max-width: 600px;">
+                <div class="col-md-6">
+                    <h6>功能特点</h6>
+                    <ul>
+                        <li>AI智能生成高清图片</li>
+                        <li>自动生成拼音标注</li>
+                        <li>支持多种场景词汇</li>
+                        <li>丰富的场景插图</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>使用帮助</h6>
+                    <ul>
+                        <li>演示模式无需API Key</li>
+                        <li>正式模式需要配置API Key</li>
+                        <li>生成后可直接下载</li>
+                        <li>词汇与场景完美结合</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <small class="text-muted">
+                改进版本 © 2024 | 丰富的场景插图，准确的词汇标注
+            </small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 场景数据
+        const scenes = [
+            { id: 'market', name: '超市', icon: 'fa-shopping-cart', color: '#48bb78' },
+            { id: 'hospital', name: '医院', icon: 'fa-hospital', color: '#ed8936' },
+            { id: 'park', name: '公园', icon: 'fa-tree', color: '#38b2ac' },
+            { id: 'school', name: '学校', icon: 'fa-school', color: '#9f7aea' },
+            { id: 'zoo', name: '动物园', icon: 'fa-paw', color: '#f56565' },
+            { id: 'station', name: '火车站', icon: 'fa-train', color: '#4299e1' }
+        ];
+
+        // 详细的场景元素和词汇
+        const sceneData = {
+            '超市': {
+                elements: [
+                    { name: '货架', icon: 'fa-grip-horizontal', color: '#8B4513', size: 50, x: 100, y: 80 },
+                    { name: '商品', icon: 'fa-box', color: '#FF6B6B', size: 35, x: 180, y: 100 },
+                    { name: '收银台', icon: 'fa-cash-register', color: '#95A5A6', size: 70, x: 320, y: 90 },
+                    { name: '推车', icon: 'fa-shopping-cart', color: '#FDBCB4', size: 60, x: 50, y: 160 },
+                    { name: '顾客', icon: 'fa-user', color: '#FDBCB4', size: 40, x: 250, y: 150 }
+                ],
+                vocabularies: [
+                    { pinyin: 'huò jià', chinese: '货架' },
+                    { pinyin: 'shāng pǐn', chinese: '商品' },
+                    { pinyin: 'shōu yín tái', chinese: '收银台' },
+                    { pinyin: 'tuī chē', chinese: '推车' },
+                    { pinyin: 'gù kè', chinese: '顾客' },
+                    { pinyin: 'shōu yín yuán', chinese: '收银员' },
+                    { pinyin: 'lán zi', chinese: '篮子' },
+                    { pinyin: 'jià gé', chinese: '价格' },
+                    { pinyin: 'píng guǒ', chinese: '苹果' },
+                    { pinyin: 'niú nǎi', chinese: '牛奶' }
+                ]
+            },
+            '医院': {
+                elements: [
+                    { name: '病床', icon: 'fa-bed', color: '#D0D0D0', size: 90, x: 80, y: 80 },
+                    { name: '医生', icon: 'fa-user-md', color: '#FDBCB4', size: 40, x: 250, y: 100 },
+                    { name: '护士', icon: 'fa-user-nurse', color: '#FDBCB4', size: 40, x: 200, y: 120 },
+                    { name: '药品柜', icon: 'fa-medicine', color: '#95A5A6', size: 60, x: 340, y: 90 },
+                    { name: '医疗器械', icon: 'fa-stethoscope', color: '#4ECDC4', size: 30, x: 160, y: 170 }
+                ],
+                vocabularies: [
+                    { pinyin: 'bìng chuáng', chinese: '病床' },
+                    { pinyin: 'yī shēng', chinese: '医生' },
+                    { pinyin: 'hù shì', chinese: '护士' },
+                    { pinyin: 'yào pǐn guì', chinese: '药品柜' },
+                    { pinyin: 'yī liáo qì xiè', chinese: '医疗器械' },
+                    { pinyin: 'bìng rén', chinese: '病人' },
+                    { pinyin: 'tǐ wēn jì', chinese: '体温计' },
+                    { pinyin: 'yì zhēn', chinese: '针' },
+                    { pinyin: 'yào', chinese: '药' },
+                    { pinyin: 'shǒu shù', chinese: '手术' }
+                ]
+            },
+            '公园': {
+                elements: [
+                    { name: '大树', icon: 'fa-tree', color: '#228B22', size: 70, x: 100, y: 80 },
+                    { name: '花丛', icon: 'fa-seedling', color: '#FF69B4', size: 50, x: 200, y: 100 },
+                    { name: '秋千', icon: 'fa-child', color: '#FF6347', size: 40, x: 320, y: 90 },
+                    { name: '滑梯', icon: 'fa-shapes', color: '#87CEEB', size: 60, x: 150, y: 160 },
+                    { name: '长椅', icon: 'fa-chair', color: '#8B4513', size: 50, x: 280, y: 170 }
+                ],
+                vocabularies: [
+                    { pinyin: 'shù', chinese: '树' },
+                    { pinyin: 'huā cóng', chinese: '花丛' },
+                    { pinyin: 'qiū qiān', chinese: '秋千' },
+                    { pinyin: 'huá tī', chinese: '滑梯' },
+                    { pinyin: 'cháng yǐ', chinese: '长椅' },
+                    { pinyin: 'cǎo dì', chinese: '草地' },
+                    { pinyin: 'hú dié', chinese: '蝴蝶' },
+                    { pinyin: 'niǎo', chinese: '鸟' },
+                    { pinyin: 'tài yáng', chinese: '太阳' },
+                    { pinyin: 'yún', chinese: '云' }
+                ]
+            },
+            '学校': {
+                elements: [
+                    { name: '教学楼', icon: 'fa-school', color: '#DEB887', size: 70, x: 150, y: 80 },
+                    { name: '老师', icon: 'fa-chalkboard-teacher', color: '#FDBCB4', size: 40, x: 250, y: 100 },
+                    { name: '学生', icon: 'fa-user-graduate', color: '#87CEEB', size: 30, x: 320, y: 120 },
+                    { name: '课桌', icon: 'fa-table', color: '#95A5A6', size: 50, x: 80, y: 160 },
+                    { name: '黑板', icon: 'fa-chalkboard', color: '#2F4F4F', size: 60, x: 200, y: 170 }
+                ],
+                vocabularies: [
+                    { pinyin: 'jiào xué lóu', chinese: '教学楼' },
+                    { pinyin: 'lǎo shī', chinese: '老师' },
+                    { pinyin: 'xué shēng', chinese: '学生' },
+                    { pinyin: 'kè zhuō', chinese: '课桌' },
+                    { pinyin: 'hēi bǎn', chinese: '黑板' },
+                    { pinyin: 'yǐ zi', chinese: '椅子' },
+                    { pinyin: 'shū', chinese: '书' },
+                    { pinyin: 'bǐ', chinese: '笔' },
+                    { pinyin: 'cǎo chǎng', chinese: '操场' },
+                    { pinyin: 'tí qìu', chinese: '踢球' }
+                ]
+            },
+            '动物园': {
+                elements: [
+                    { name: '狮子', icon: 'fa-cat', color: '#DAA520', size: 50, x: 100, y: 80 },
+                    { name: '猴子', icon: 'fa-monkey', color: '#8B4513', size: 40, x: 200, y: 100 },
+                    { name: '大象', icon: 'fa-elephant', color: '#4ECDC4', size: 60, x: 300, y: 90 },
+                    { name: '熊猫', icon: 'fa-paw', color: '#FDBCB4', size: 45, x: 150, y: 150 },
+                    { name: '围栏', icon: 'fa-border-all', color: '#8B4513', size: 90, x: 250, y: 160 }
+                ],
+                vocabularies: [
+                    { pinyin: 'shī zi', chinese: '狮子' },
+                    { pinyin: 'hóu zi', chinese: '猴子' },
+                    { pinyin: 'dà xiàng', chinese: '大象' },
+                    { pinyin: 'xióng māo', chinese: '熊猫' },
+                    { pinyin: 'wéi lán', chinese: '围栏' },
+                    { pinyin: 'lǎo hǔ', chinese: '老虎' },
+                    { pinyin: 'cháng jǐng lù', chinese: '长颈鹿' },
+                    { pinyin: 'sì yǎng yuán', chinese: '饲养员' },
+                    { pinyin: 'lóng zi', chinese: '笼子' },
+                    { pinyin: 'guān zhòng', chinese: '观众' }
+                ]
+            },
+            '火车站': {
+                elements: [
+                    { name: '火车头', icon: 'fa-train', color: '#E74C3C', size: 100, x: 100, y: 80 },
+                    { name: '站台', icon: 'fa-door-open', color: '#95A5A6', size: 70, x: 300, y: 100 },
+                    { name: '候车室', icon: 'fa-couch', color: '#87CEEB', size: 60, x: 80, y: 170 },
+                    { name: '轨道', icon: 'fa-road', color: '#34495E', size: 40, x: 200, y: 180 }
+                ],
+                vocabularies: [
+                    { pinyin: 'huǒ chē tóu', chinese: '火车头' },
+                    { pinyin: 'zhàn tái', chinese: '站台' },
+                    { pinyin: 'hòu chē shì', chinese: '候车室' },
+                    { pinyin: 'guǐ dào', chinese: '轨道' },
+                    { pinyin: 'chéng kè', chinese: '乘客' },
+                    { pinyin: 'xíng li', chinese: '行李' },
+                    { pinyin: 'piào', chinese: '票' },
+                    { pinyin: 'liè chē yuán', chinese: '列车员' },
+                    { pinyin: 'guǎng bō', chinese: '广播' },
+                    { pinyin: 'sī jī', chinese: '司机' }
+                ]
+            }
+        };
+
+        let selectedScene = '超市';
+        let currentMode = 'demo'; // demo or real
+        let apiKey = localStorage.getItem('kie_ai_api_key') || '';
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initScenes();
+            loadSavedConfig();
+        });
+
+        // 初始化场景选择
+        function initScenes() {
+            const grid = document.getElementById('sceneGrid');
+            scenes.forEach((scene, index) => {
+                const card = document.createElement('div');
+                card.className = 'col-12';
+                card.innerHTML = `
+                    <div class="scene-card ${index === 0 ? 'active' : ''}" onclick="selectScene('${scene.name}', this)">
+                        <div class="scene-icon" style="color: ${scene.color}">
+                            <i class="fas ${scene.icon}"></i>
+                        </div>
+                        <div>${scene.name}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 选择场景
+        function selectScene(sceneName, element) {
+            document.querySelectorAll('.scene-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            element.classList.add('active');
+            selectedScene = sceneName;
+        }
+
+        // 切换API配置显示
+        function toggleApiConfig() {
+            const configDiv = document.getElementById('apiConfig');
+            configDiv.style.display = configDiv.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // 加载保存的配置
+        function loadSavedConfig() {
+            const savedKey = localStorage.getItem('kie_ai_api_key');
+            if (savedKey) {
+                document.getElementById('apiKeyInput').value = savedKey;
+                currentMode = 'real';
+                updateApiStatus('正式模式 - API Key已配置');
+            }
+        }
+
+        // 更新API状态显示
+        function updateApiStatus(status) {
+            const statusDiv = document.getElementById('apiStatus');
+            const statusText = document.getElementById('apiStatusText');
+            const modeStatus = document.getElementById('modeStatus');
+
+            statusDiv.className = currentMode === 'demo' ? 'alert alert-warning' : 'alert alert-success';
+            statusText.textContent = status;
+            modeStatus.className = 'badge ' + (currentMode === 'demo' ? 'bg-warning' : 'bg-success');
+            modeStatus.innerHTML = '<i class="fas fa-' + (currentMode === 'demo' ? 'play' : 'robot') + '"></i> ' + (currentMode === 'demo' ? '演示模式' : '正式模式');
+        }
+
+        // 生成图片
+        async function generateImage() {
+            const title = document.getElementById('titleInput').value || '识字小报';
+            const isDemoMode = document.getElementById('demoModeCheck').checked;
+
+            // 如果不是演示模式，检查API Key
+            if (!isDemoMode) {
+                apiKey = document.getElementById('apiKeyInput').value;
+                if (!apiKey || apiKey.length < 10) {
+                    alert('请输入有效的API Key！');
+                    return;
+                }
+                localStorage.setItem('kie_ai_api_key', apiKey);
+                currentMode = 'real';
+            } else {
+                currentMode = 'demo';
+            }
+
+            updateApiStatus(isDemoMode ? '演示模式运行中' : '正式模式运行中');
+
+            // 显示加载状态
+            const resultPanel = document.getElementById('resultPanel');
+            resultPanel.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner"></div>
+                    <h4 class="mt-4">正在生成识字小报...</h4>
+                    <p class="text-muted">
+                        ${isDemoMode ? '演示模式，约5-10秒生成示例图片' : '正式模式，约30-60秒AI生成'}
+                    </p>
+                    <div class="progress" style="width: 300px; margin: 20px auto;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const imageData = await generatePosterImage(title, selectedScene);
+                showResult(imageData, title, selectedScene);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // 生成海报图片
+        async function generatePosterImage(title, theme) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 1200;
+            const ctx = canvas.getContext('2d');
+
+            // 绘制渐变背景
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#ffffff');
+            gradient.addColorStop(1, '#f0f4f8');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制顶部标题栏
+            ctx.fillStyle = '#667eea';
+            ctx.fillRect(0, 0, canvas.width, 150);
+
+            // 绘制装饰条纹
+            ctx.fillStyle = '#764ba2';
+            ctx.fillRect(0, 140, canvas.width, 10);
+
+            // 绘制标题
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 54px Microsoft YaHei, Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`《${title}》`, canvas.width / 2, 85);
+
+            // 获取场景数据
+            const scene = sceneData[theme];
+            if (!scene) {
+                throw new Error('未找到场景数据');
+            }
+
+            // 绘制场景插图区
+            const sceneY = 200;
+            const sceneHeight = 600;  // 增加场景高度，因为不需要底部词汇卡片区域
+
+            ctx.fillStyle = '#f0f8ff';
+            ctx.fillRect(40, sceneY, canvas.width - 80, sceneHeight);
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(40, sceneY, canvas.width - 80, sceneHeight);
+
+            // 绘制场景标题
+            ctx.fillStyle = '#333333';
+            ctx.font = 'bold 40px Microsoft YaHei, Arial';
+            ctx.fillText(`${theme}主题场景`, canvas.width / 2, sceneY + 50);
+
+            // 绘制场景元素和对应的词汇标注
+            scene.elements.forEach((element, index) => {
+                // 调整元素位置到场景框内，并扩展分布范围
+                const adjustedElement = {
+                    ...element,
+                    x: element.x + 40,  // 场景框左边距
+                    y: element.y + sceneY + 80,  // 场景框顶部+标题区域
+                    // 调整Y坐标，使元素在更大的场景区域内分布
+                    size: element.size * 1.2  // 稍微增大元素尺寸
+                };
+                drawSceneElement(ctx, adjustedElement);
+
+                // 为每个元素绘制中文标签和拼音
+                ctx.save();
+
+                // 设置文字样式
+                ctx.fillStyle = '#333333';
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 4;
+                ctx.font = 'bold 20px Microsoft YaHei, SimHei, Arial';
+                ctx.textAlign = 'center';
+
+                // 绘制文字描边（白色）
+                ctx.strokeText(element.name, adjustedElement.x, adjustedElement.y + adjustedElement.size + 25);
+                // 绘制文字（黑色）
+                ctx.fillText(element.name, adjustedElement.x, adjustedElement.y + adjustedElement.size + 25);
+
+                // 如果有对应的词汇，绘制拼音
+                if (index < scene.vocabularies.length) {
+                    const vocab = scene.vocabularies[index];
+                    ctx.font = '16px Microsoft YaHei, Arial';
+                    ctx.fillStyle = '#666666';
+
+                    // 绘制拼音背景
+                    const pinyinWidth = vocab.pinyin.length * 10 + 20;
+                    ctx.fillStyle = 'rgba(255, 255, 200, 0.8)';
+                    ctx.fillRect(adjustedElement.x - pinyinWidth/2, adjustedElement.y + adjustedElement.size + 35, pinyinWidth, 22);
+
+                    // 绘制拼音
+                    ctx.fillStyle = '#333333';
+                    ctx.fillText(vocab.pinyin, adjustedElement.x, adjustedElement.y + adjustedElement.size + 50);
+                }
+
+                ctx.restore();
+            });
+
+            // 不再绘制分隔线和底部词汇卡片
+            // 词汇标注已直接显示在场景元素旁边
+
+            // 转换为图片数据
+            return canvas.toDataURL('image/png');
+        }
+
+        // 绘制场景元素（改进版）
+        function drawSceneElement(ctx, element) {
+            ctx.save();
+
+            // 绘制元素背景
+            ctx.fillStyle = '#fff';
+            ctx.strokeStyle = element.color;
+            ctx.lineWidth = 2;
+
+            // 根据元素类型绘制不同的图形
+            if (element.icon === 'fa-grip-horizontal') {
+                // 货架
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 30, element.y - 30, 60, 50);
+                ctx.strokeRect(element.x - 30, element.y - 30, 60, 50);
+
+                // 货架层板
+                ctx.fillStyle = '#D2B48C';
+                for (let i = 0; i < 3; i++) {
+                    ctx.fillRect(element.x - 25, element.y - 20 + i * 15, 50, 8);
+                }
+
+            } else if (element.icon === 'fa-box') {
+                // 商品
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 17, element.y - 17, 35, 35);
+                ctx.strokeRect(element.x - 17, element.y - 17, 35, 35);
+
+            } else if (element.icon === 'fa-cash-register') {
+                // 收银台
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 40, element.y - 25, 80, 50);
+                ctx.strokeRect(element.x - 40, element.y - 25, 80, 50);
+
+                // 屏幕
+                ctx.fillStyle = '#87CEEB';
+                ctx.fillRect(element.x - 30, element.y - 20, 60, 30);
+
+            } else if (element.icon === 'fa-shopping-cart') {
+                // 推车
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 30, element.y - 20, 60, 40);
+                ctx.strokeRect(element.x - 30, element.y - 20, 60, 40);
+
+                // 车轮
+                ctx.fillStyle = '#333333';
+                ctx.beginPath();
+                ctx.arc(element.x - 20, element.y + 20, 5, 0, Math.PI * 2);
+                ctx.arc(element.x + 20, element.y + 20, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else if (element.icon === 'fa-user') {
+                // 顾客/医生/护士等人物
+                ctx.fillStyle = element.color;
+                // 头部
+                ctx.beginPath();
+                ctx.arc(element.x, element.y - 15, 12, 0, Math.PI * 2);
+                ctx.fill();
+                // 身体
+                ctx.fillRect(element.x - 15, element.y - 5, 30, 35);
+
+            } else if (element.icon === 'fa-bed') {
+                // 病床
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 40, element.y - 20, 80, 60);
+                ctx.strokeRect(element.x - 40, element.y - 20, 80, 60);
+
+                // 枕头
+                ctx.fillStyle = '#F5F5F5';
+                ctx.fillRect(element.x - 35, element.y - 25, 70, 10);
+
+                // 枕垫
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 35, element.y - 10, 20, 50);
+                ctx.fillRect(element.x + 15, element.y - 10, 20, 50);
+
+            } else if (element.icon === 'fa-medicine' || element.icon === 'fa-stethoscope') {
+                // 药品柜/医疗器械
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 25, element.y - 25, 50, 50);
+                ctx.strokeRect(element.x - 25, element.y - 25, 50, 50);
+
+                // 把手
+                ctx.strokeStyle = '#666666';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(element.x, element.y, 20, 0, Math.PI * 2);
+                ctx.stroke();
+
+            } else if (element.icon === 'fa-tree') {
+                // 树干
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(element.x - 15, element.y - 30, 30, 60);
+
+                // 树冠（圆形）
+                ctx.fillStyle = element.color;
+                ctx.beginPath();
+                ctx.arc(element.x, element.y - 60, 45, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else if (element.icon === 'fa-seedling') {
+                // 花丛
+                ctx.fillStyle = element.color;
+                for (let i = 0; i < 5; i++) {
+                    ctx.beginPath();
+                    ctx.arc(element.x - 20 + i * 10, element.y, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+            } else if (element.icon === 'fa-child') {
+                // 秋千
+                ctx.strokeStyle = element.color;
+                ctx.lineWidth = 3;
+                // 链条
+                ctx.beginPath();
+                ctx.moveTo(element.x - 15, element.y - 30);
+                ctx.lineTo(element.x - 15, element.y + 15);
+                ctx.moveTo(element.x + 15, element.y - 30);
+                ctx.lineTo(element.x + 15, element.y + 15);
+                ctx.stroke();
+                // 座位
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 20, element.y + 15, 40, 5);
+
+            } else if (element.icon === 'fa-shapes') {
+                // 滑梯
+                ctx.fillStyle = element.color;
+                ctx.beginPath();
+                ctx.moveTo(element.x - 30, element.y - 20);
+                ctx.lineTo(element.x + 30, element.y - 20);
+                ctx.lineTo(element.x + 30, element.y + 20);
+                ctx.lineTo(element.x - 20, element.y + 20);
+                ctx.closePath();
+                ctx.fill();
+
+            } else if (element.icon === 'fa-chair') {
+                // 长椅
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 25, element.y - 10, 50, 30);
+                // 椅腿
+                ctx.fillRect(element.x - 20, element.y + 20, 5, 20);
+                ctx.fillRect(element.x + 15, element.y + 20, 5, 20);
+
+            } else if (element.icon === 'fa-school') {
+                // 教学楼
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 35, element.y - 30, 70, 60);
+                // 屋顶
+                ctx.beginPath();
+                ctx.moveTo(element.x - 40, element.y - 30);
+                ctx.lineTo(element.x, element.y - 50);
+                ctx.lineTo(element.x + 40, element.y - 30);
+                ctx.closePath();
+                ctx.fill();
+                // 窗户
+                ctx.fillStyle = '#87CEEB';
+                for (let i = 0; i < 2; i++) {
+                    for (let j = 0; j < 2; j++) {
+                        ctx.fillRect(element.x - 25 + i * 25, element.y - 15 + j * 20, 15, 12);
+                    }
+                }
+
+            } else if (element.icon === 'fa-chalkboard-teacher' || element.icon === 'fa-user-graduate') {
+                // 老师/学生
+                ctx.fillStyle = element.color;
+                // 头部
+                ctx.beginPath();
+                ctx.arc(element.x, element.y - 12, 10, 0, Math.PI * 2);
+                ctx.fill();
+                // 身体
+                ctx.fillRect(element.x - 12, element.y - 5, 24, 28);
+
+            } else if (element.icon === 'fa-table') {
+                // 课桌
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 25, element.y - 5, 50, 30);
+                // 桌腿
+                ctx.fillRect(element.x - 20, element.y + 25, 5, 15);
+                ctx.fillRect(element.x + 15, element.y + 25, 5, 15);
+
+            } else if (element.icon === 'fa-chalkboard') {
+                // 黑板
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 30, element.y - 25, 60, 50);
+                // 黑板框
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(element.x - 30, element.y - 25, 60, 50);
+
+            } else if (element.icon === 'fa-cat' || element.icon === 'fa-paw') {
+                // 狮子/熊猫
+                ctx.fillStyle = element.color;
+                // 身体
+                ctx.beginPath();
+                ctx.ellipse(element.x, element.y, 20, 15, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // 头部
+                ctx.beginPath();
+                ctx.arc(element.x - 15, element.y - 5, 12, 0, Math.PI * 2);
+                ctx.arc(element.x + 15, element.y - 5, 12, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else if (element.icon === 'fa-monkey' || element.icon === 'fa-elephant') {
+                // 猴子/大象
+                ctx.fillStyle = element.color;
+                // 身体
+                ctx.beginPath();
+                ctx.ellipse(element.x, element.y, 25, 20, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // 头部
+                ctx.beginPath();
+                ctx.arc(element.x, element.y - 20, 15, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else if (element.icon === 'fa-border-all') {
+                // 围栏
+                ctx.strokeStyle = element.color;
+                ctx.lineWidth = 4;
+                for (let i = 0; i < 4; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(element.x - 30 + i * 20, element.y);
+                    ctx.lineTo(element.x - 30 + i * 20, element.y - 40);
+                    ctx.stroke();
+                }
+                // 横栏
+                ctx.beginPath();
+                ctx.moveTo(element.x - 35, element.y);
+                ctx.lineTo(element.x + 35, element.y);
+                ctx.moveTo(element.x - 35, element.y - 20);
+                ctx.lineTo(element.x + 35, element.y - 20);
+                ctx.stroke();
+
+            } else if (element.icon === 'fa-train') {
+                // 火车头
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 60, element.y - 25, 120, 30);
+                ctx.fillRect(element.x - 40, element.y - 45, 80, 20);
+
+                // 车窗
+                ctx.fillStyle = '#87CEEB';
+                for (let i = 0; i < 3; i++) {
+                    ctx.fillRect(element.x - 50 + i * 35, element.y - 40, 25, 20);
+                }
+
+            } else if (element.icon === 'fa-door-open') {
+                // 站台
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 35, element.y - 25, 70, 50);
+                // 站台顶
+                ctx.fillRect(element.x - 40, element.y - 35, 80, 10);
+                // 支柱
+                ctx.fillRect(element.x - 30, element.y - 25, 5, 40);
+                ctx.fillRect(element.x + 25, element.y - 25, 5, 40);
+
+            } else if (element.icon === 'fa-couch') {
+                // 候车室
+                ctx.fillStyle = element.color;
+                // 主体建筑
+                ctx.fillRect(element.x - 30, element.y - 25, 60, 50);
+                // 门
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(element.x - 10, element.y - 5, 20, 30);
+                // 窗户
+                ctx.fillStyle = '#87CEEB';
+                ctx.fillRect(element.x - 25, element.y - 15, 10, 15);
+                ctx.fillRect(element.x + 15, element.y - 15, 10, 15);
+
+            } else if (element.icon === 'fa-road') {
+                // 轨道
+                ctx.fillStyle = element.color;
+                ctx.fillRect(element.x - 60, element.y - 5, 120, 10);
+                // 轨道线
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([10, 5]);
+                ctx.beginPath();
+                ctx.moveTo(element.x - 60, element.y);
+                ctx.lineTo(element.x + 60, element.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+            } else {
+                // 默认绘制方式
+                ctx.fillStyle = element.color;
+                ctx.beginPath();
+                ctx.arc(element.x, element.y, element.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        // 绘制词汇标签
+        function drawVocabLabel(ctx, text, x, y, bgColor = '#ffffff') {
+            // 设置背景
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(x - 40, y - 12, 80, 24);
+
+            // 绘制边框
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x - 40, y - 12, 80, 24);
+
+            // 绘制文字
+            ctx.fillStyle = '#333333';
+            ctx.font = '14px Microsoft YaHei, Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(text, x, y + 4);
+        }
+
+        // 绘制词汇卡片
+        function drawVocabCard(ctx, chinese, pinyin, x, y) {
+            // 绘制卡片背景（带渐变效果）
+            const cardWidth = 180;
+            const cardHeight = 90;
+
+            // 创建渐变背景
+            const gradient = ctx.createLinearGradient(x - 15, y - 20, x - 15, y + cardHeight - 20);
+            gradient.addColorStop(0, '#f8f9ff');
+            gradient.addColorStop(1, '#e8ecff');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x - 15, y - 20, cardWidth, cardHeight);
+
+            // 绘制边框（带圆角效果）
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x - 15, y - 20, cardWidth, cardHeight);
+
+            // 绘制内边框装饰
+            ctx.strokeStyle = '#a5b4fc';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x - 10, y - 15, cardWidth - 10, cardHeight - 10);
+
+            // 绘制中文
+            ctx.fillStyle = '#1a1a1a';
+            ctx.font = 'bold 32px Microsoft YaHei, KaiTi, Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(chinese, x + (cardWidth - 30) / 2, y + 20);
+
+            // 绘制拼音
+            ctx.fillStyle = '#4b5563';
+            ctx.font = 'italic 18px Microsoft YaHei, Arial';
+            ctx.fillText(pinyin, x + (cardWidth - 30) / 2, y + 50);
+        }
+
+        // 显示结果
+        function showResult(imageData, title, theme) {
+            const resultPanel = document.getElementById('resultPanel');
+
+            resultPanel.innerHTML = `
+                <div class="text-center">
+                    <h4 class="mb-4">
+                        <i class="fas fa-check-circle text-success"></i> 生成完成！
+                    </h4>
+                    <img src="${imageData}" class="result-image" alt="${title}">
+
+                    <div class="action-buttons">
+                        <a href="${imageData}" download="${title}_${theme}.png" class="action-btn download-btn">
+                            <i class="fas fa-download"></i>
+                            下载图片
+                        </a>
+                        <button class="action-btn view-btn" onclick="viewInNewWindow('${imageData}')">
+                            <i class="fas fa-external-link-alt"></i>
+                            新窗口查看
+                        </button>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>小报信息</h5>
+                        <p><strong>标题：</strong>${title}</p>
+                        <p><strong>场景：</strong>${theme}</p>
+                        <p><strong>模式：</strong>${currentMode === 'demo' ? '演示模式' : '正式模式'}</p>
+                        <p><strong>生成时间：</strong>${new Date().toLocaleString()}</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <h6>提示：</h6>
+                        <p class="text-muted">右键点击图片也可以选择"图片另存为"</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 新窗口查看
+        function viewInNewWindow(imageData) {
+            const win = window.open();
+            win.document.write(`<img src="${imageData}" style="max-width:100%; height:auto;">`);
+        }
+
+        // 显示错误
+        function showError(message) {
+            const resultPanel = document.getElementById('resultPanel');
+            resultPanel.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-exclamation-triangle fa-5x text-danger mb-4"></i>
+                    <h4>生成失败</h4>
+                    <p class="text-muted">${message}</p>
+                    <button class="btn btn-primary mt-3" onclick="location.reload()">
+                        <i class="fas fa-redo"></i> 重试
+                    </button>
+                </div>
+            `;
+        }
+
+        // 预览提示词
+        function showPromptPreview() {
+            const title = document.getElementById('titleInput').value || '识字小报';
+
+            // 构建提示词
+            const prompt = `请生成一张儿童识字小报《${selectedScene}》，竖版 A4，学习小报版式，适合 5–9 岁孩子 认字与看图识物。
+
+# 一、小报标题区（顶部）
+**顶部居中大标题**：《${title}》
+* **风格**：十字小报 / 儿童学习报感
+* **文本要求**：大字、醒目、卡通手写体、彩色描边
+
+# 二、小报主体（中间主画面）
+画面中心是一幅 **卡通插画风的「${selectedScene}」场景**：
+* **整体气氛**：明亮、温暖、积极
+* **构图**：物体边界清晰，方便对应文字，不要过于拥挤。
+
+**核心元素描述：**
+
+${getSceneDescription(selectedScene)}
+
+# 三、必画物体与识字清单
+**请务必在画面中清晰绘制以下物体**：
+
+${getSceneVocabularies(selectedScene)}
+
+# 四、识字标注规则
+对上述清单中的物体，贴上中文识字标签：
+* **格式**：两行制（第一行拼音带声调，第二行简体汉字）
+* **样式**：彩色小贴纸风格，白底黑字，清晰可读
+
+# 五、画风参数
+* **风格**：儿童绘本风 + 识字小报风
+* **色彩**：高饱和、明快、温暖
+* **质量**：8k resolution, high detail, vector illustration style, clean lines`;
+
+            document.getElementById('promptContent').textContent = prompt;
+            const modal = new bootstrap.Modal(document.getElementById('promptModal'));
+            modal.show();
+        }
+
+        // 获取场景描述
+        function getSceneDescription(theme) {
+            const descriptions = {
+                '超市': `- **超市环境**：明亮的购物空间，整洁的货架，丰富的商品展示
+- **氛围营造**：温馨、友好的购物氛围，适合儿童学习
+- **色彩建议**：温暖的色彩，明亮而不刺眼
+- **构图要点**：物体排列有序，便于识别和标注`,
+                '医院': `- **医院环境**：干净整洁的医院内部，白色的病房和诊室
+- **氛围营造**：专业、安静但有亲和力，减少紧张感
+- **色彩建议**：以白色、蓝色为主，营造清洁感
+- **构图要点**：突出医疗设备，便于儿童了解医院`,
+                '公园': `- **公园环境**：绿色自然的户外公园，有树木、花草和游乐设施
+- **氛围营造**：轻松、愉快，充满自然气息
+- **色彩建议**：以绿色为主，辅以花朵的彩色
+- **构图要点**：展示自然元素和娱乐设施`,
+                '学校': `- **学校环境**：明亮的教室和校园环境，有学习的氛围
+- **氛围营造**：积极向上，充满知识气息
+- **色彩建议**：以蓝色、黄色为主，营造活力感
+- **构图要点**：展示教学场景和学习工具`,
+                '动物园': `- **动物园环境**：有围栏的动物栖息地，自然的环境元素
+- **氛围营造**：有趣、富有探索性，激发儿童对动物的兴趣
+- **色彩建议**：自然色调，动物的色彩要真实
+- **构图要点**：各种动物要清晰可见，便于识别`,
+                '火车站': `- **火车站环境**：现代化的车站设施，有站台和轨道
+- **氛围营造**：秩序井然，有旅行的兴奋感
+- **色彩建议**：现代建筑的色调，配以交通元素的色彩
+- **构图要点**：展示车站的核心设施和交通工具`
+            };
+            return descriptions[theme] || '主题场景描述';
+        }
+
+        // 获取场景词汇
+        function getSceneVocabularies(theme) {
+            const scene = sceneData[theme];
+            if (!scene) return '';
+
+            return scene.vocabularies.map(vocab =>
+                `**${vocab.chinese}** (${vocab.pinyin})`
+            ).join('\n');
+        }
+
+        // 复制提示词
+        function copyPrompt() {
+            const prompt = document.getElementById('promptContent').textContent;
+            navigator.clipboard.writeText(prompt).then(() => {
+                alert('提示词已复制到剪贴板！');
+            });
+        }
+    </script>
+</body>
+</html>

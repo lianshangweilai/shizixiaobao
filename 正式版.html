@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儿童识字小报生成器 - 正式版</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+            --info-color: #4299e1;
+            --light-color: #f7fafc;
+            --dark-color: #2d3748;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* 顶部导航 */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+
+        .version-badge {
+            background: var(--success-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin-left: 10px;
+        }
+
+        /* 主要内容区 */
+        .main-container {
+            padding-top: 100px;
+            padding-bottom: 50px;
+        }
+
+        /* 左侧面板 */
+        .control-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 100px;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        /* 场景选择卡片 */
+        .scene-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .scene-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .scene-card.active {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+
+        .scene-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        /* 按钮样式 */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+        }
+
+        /* 右侧结果区 */
+        .result-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 600px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        /* 加载动画 */
+        .loading-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 结果图片展示 */
+        .result-image-container {
+            text-align: center;
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 3px solid #e2e8f0;
+        }
+
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+            color: white;
+        }
+
+        .view-btn {
+            background: linear-gradient(135deg, var(--info-color), #3182ce);
+            color: white;
+        }
+
+        .view-btn:hover {
+            transform: scale(1.05);
+            color: white;
+        }
+
+        /* 错误提示 */
+        .error-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .error-icon {
+            font-size: 5rem;
+            color: var(--danger-color);
+            margin-bottom: 20px;
+        }
+
+        /* 提示词预览 */
+        .prompt-preview {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* 模式切换 */
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .mode-option:hover {
+            border-color: var(--primary-color);
+        }
+
+        .mode-option.active {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* API配置区域 */
+        .api-config {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* 页脚 */
+        footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 40px 0;
+            margin-top: 80px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .control-panel {
+                position: relative;
+                top: 0;
+                margin-bottom: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar fixed-top">
+        <div class="container">
+            <span class="navbar-brand">
+                <i class="fas fa-book-open"></i>
+                儿童识字小报生成器
+                <span class="version-badge">
+                    <i class="fas fa-check"></i> 正式版
+                </span>
+            </span>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-sm btn-outline-primary me-2" onclick="toggleApiConfig()">
+                    <i class="fas fa-cog"></i> API配置
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- API配置区域 -->
+    <div class="container" style="margin-top: 80px;">
+        <div class="api-config" id="apiConfig" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="mb-1">
+                        <i class="fas fa-key"></i> API Key 配置
+                    </h5>
+                    <small class="text-muted">获取 API Key: <a href="https://kie.ai/api-key" target="_blank">https://kie.ai/api-key</a></small>
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="toggleApiConfig()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="mode-selector">
+                <div class="mode-option active" id="demoMode" onclick="selectMode('demo')">
+                    <i class="fas fa-play fa-2x mb-2"></i><br>
+                    <strong>演示模式</strong><br>
+                    <small>无需API Key</small>
+                </div>
+                <div class="mode-option" id="realMode" onclick="selectMode('real')">
+                    <i class="fas fa-robot fa-2x mb-2"></i><br>
+                    <strong>正式模式</strong><br>
+                    <small>需要API Key</small>
+                </div>
+            </div>
+
+            <div id="apiKeySection" style="display: none;">
+                <label class="form-label">输入您的 Kie AI API Key</label>
+                <input type="password" class="form-control" id="apiKeyInput" placeholder="请输入API Key">
+                <div class="form-text mt-2">
+                    <i class="fas fa-lock text-warning"></i>
+                    API Key 将安全保存在浏览器本地存储中
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="container main-container">
+        <div class="row">
+            <!-- 左侧控制面板 -->
+            <div class="col-lg-4">
+                <div class="control-panel">
+                    <!-- 场景选择 -->
+                    <div class="mb-4">
+                        <div class="section-title">
+                            <i class="fas fa-map"></i> 选择场景
+                        </div>
+                        <div class="row g-3" id="sceneGrid">
+                            <!-- 场景卡片将由JavaScript生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 标题输入 -->
+                    <div class="mb-4">
+                        <div class="section-title">
+                            <i class="fas fa-heading"></i> 小报标题
+                        </div>
+                        <input type="text" class="form-control" id="titleInput"
+                               placeholder="例如：走进超市" value="走进超市">
+                        <div class="form-text">
+                            <i class="fas fa-lightbulb text-warning"></i>
+                            建议使用6-8个字的标题
+                        </div>
+                    </div>
+
+                    <!-- 参数设置 -->
+                    <div class="mb-4">
+                        <div class="section-title">
+                            <i class="fas fa-sliders-h"></i> 生成参数
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label">宽高比</label>
+                                <select class="form-select" id="ratioSelect">
+                                    <option value="3:4" selected>3:4 (A4竖版)</option>
+                                    <option value="1:1">1:1 (正方形)</option>
+                                    <option value="4:3">4:3 (横向)</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">分辨率</label>
+                                <select class="form-select" id="resolutionSelect">
+                                    <option value="2K" selected>2K (推荐)</option>
+                                    <option value="1K">1K (快速)</option>
+                                    <option value="4K">4K (高清)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-info" onclick="showPromptPreview()">
+                            <i class="fas fa-eye"></i> 预览提示词
+                        </button>
+                        <button class="btn btn-primary btn-generate btn-lg" onclick="generateImage()">
+                            <i class="fas fa-magic"></i> 生成识字小报
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧结果区 -->
+            <div class="col-lg-8">
+                <div class="result-panel" id="resultPanel">
+                    <div class="text-center" style="padding: 100px 0;">
+                        <i class="fas fa-image fa-5x text-muted mb-4"></i>
+                        <h4>准备生成识字小报</h4>
+                        <p class="text-muted">选择场景和标题，点击"生成识字小报"开始创作</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示词预览模态框 -->
+    <div class="modal fade" id="promptModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-code"></i> AI提示词
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="prompt-preview" id="promptContent"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="copyPrompt()">
+                        <i class="fas fa-copy"></i> 复制提示词
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container text-center">
+            <h5 class="mb-3">儿童识字小报生成器</h5>
+            <p class="mb-3">
+                基于 Kie AI Nano Banana Pro API<br>
+                适合5-9岁儿童的中文识字学习工具
+            </p>
+            <div class="row justify-content-center text-start" style="max-width: 600px;">
+                <div class="col-md-6">
+                    <h6>功能特点</h6>
+                    <ul>
+                        <li>AI智能生成高清图片</li>
+                        <li>自动生成拼音标注</li>
+                        <li>支持多种场景词汇</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>使用说明</h6>
+                    <ul>
+                        <li>演示模式无需API Key</li>
+                        <li>正式模式需要配置API Key</li>
+                        <li>生成后可直接下载</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <small class="text-muted">
+                正式版本 © 2024 | 支持图片正常显示和下载
+            </small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 场景数据
+        const scenes = [
+            { id: 'market', name: '超市', icon: 'fa-shopping-cart', color: '#48bb78' },
+            { id: 'hospital', name: '医院', icon: 'fa-hospital', color: '#ed8936' },
+            { id: 'park', name: '公园', icon: 'fa-tree', color: '#38b2ac' },
+            { id: 'school', name: '学校', icon: 'fa-school', color: '#9f7aea' },
+            { id: 'zoo', name: '动物园', icon: 'fa-paw', color: '#f56565' },
+            { id: 'station', name: '火车站', icon: 'fa-train', color: '#4299e1' }
+        ];
+
+        // 词汇数据
+        const vocabularies = {
+            '超市': [
+                { pinyin: 'shōu yín yuán', chinese: '收银员' },
+                { pinyin: 'gù kè', chinese: '顾客' },
+                { pinyin: 'huò jià', chinese: '货架' },
+                { pinyin: 'tuī chē', chinese: '推车' },
+                { pinyin: 'lán zi', chinese: '篮子' },
+                { pinyin: 'píng guǒ', chinese: '苹果' },
+                { pinyin: 'niú nǎi', chinese: '牛奶' },
+                { pinyin: 'miàn bāo', chinese: '面包' },
+                { pinyin: 'shāng pǐn', chinese: '商品' },
+                { pinyin: 'jià gé', chinese: '价格' },
+                { pinyin: 'bǎo ān', chinese: '保安' }
+            ],
+            '医院': [
+                { pinyin: 'yī shēng', chinese: '医生' },
+                { pinyin: 'hù shì', chinese: '护士' },
+                { pinyin: 'bìng rén', chinese: '病人' },
+                { pinyin: 'yào pǐn', chinese: '药品' },
+                { pinyin: 'yì zhēn', chinese: '针' },
+                { pinyin: 'tǐ wēn jì', chinese: '体温计' },
+                { pinyin: 'yī xiè', chinese: '医疗器械' },
+                { pinyin: 'bìng chuáng', chinese: '病床' },
+                { pinyin: 'chú fáng', chinese: '厨房' },
+                { pinyin: 'guà hào chù', chinese: '挂号处' }
+            ],
+            '公园': [
+                { pinyin: 'huā', chinese: '花' },
+                { pinyin: 'shù', chinese: '树' },
+                { pinyin: 'qiū qiān', chinese: '秋千' },
+                { pinyin: 'huá tī', chinese: '滑梯' },
+                { pinyin: 'cǎo dì', chinese: '草地' },
+                { pinyin: 'niǎo', chinese: '鸟' },
+                { pinyin: 'hú dié', chinese: '蝴蝶' },
+                { pinyin: 'tí zi', Chinese: '梯子' },
+                { pinyin: 'cháng yǐ', chinese: '长椅' },
+                { pinyin: 'hú', chinese: '湖' }
+            ],
+            '学校': [
+                { pinyin: 'lǎo shī', chinese: '老师' },
+                { pinyin: 'xué shēng', chinese: '学生' },
+                { pinyin: 'jiào shì', chinese: '教室' },
+                { pinyin: 'zhuō zi', chinese: '桌子' },
+                { pinyin: 'yǐ zi', chinese: '椅子' },
+                { pinyin: 'shū', chinese: '书' },
+                { pinyin: 'bǐ', chinese: '笔' },
+                { pinyin: 'hēi bǎn', chinese: '黑板' },
+                { pinyin: 'qiáng bào', chinese: '墙报' },
+                { pinyin: 'tǐ yù chǎng', chinese: '操场' }
+            ],
+            '动物园': [
+                { pinyin: 'shī zi', chinese: '狮子' },
+                { pinyin: 'hóu zi', chinese: '猴子' },
+                { pinyin: 'dà xiàng', chinese: '大象' },
+                { pinyin: 'xióng māo', chinese: '熊猫' },
+                { pinyin: 'cháng jǐng lù', chinese: '长颈鹿' },
+                { pinyin: 'lǎo hǔ', chinese: '老虎' },
+                { pinyin: 'sì yǎng yuán', chinese: '饲养员' },
+                { pinyin: 'lóng zi', chinese: '笼子' },
+                { pinyin: 'guān zhòng', chinese: '观众' },
+                { pinyin: 'wán ju', chinese: '玩具' }
+            ],
+            '火车站': [
+                { pinyin: 'huǒ chē', chinese: '火车' },
+                { pinyin: 'zhàn tái', chinese: '站台' },
+                { pinyin: 'chéng kè', chinese: '乘客' },
+                { pinyin: 'xíng li', chinese: '行李' },
+                { pinyin: 'piào', chinese: '票' },
+                { pinyin: 'jiǎn piào chù', chinese: '检票处' },
+                { pinyin: 'hòu chē shì', chinese: '候车室' },
+                { pinyin: 'guì dào', chinese: '轨道' },
+                { pinyin: 'liè chē yuán', chinese: '列车员' },
+                { pinyin: 'mén', chinese: '门' }
+            ]
+        };
+
+        let selectedScene = '超市';
+        let currentMode = 'demo'; // demo or real
+        let apiKey = localStorage.getItem('kie_ai_api_key') || '';
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initScenes();
+            if (apiKey) {
+                document.getElementById('apiKeyInput').value = apiKey;
+            }
+        });
+
+        // 初始化场景选择
+        function initScenes() {
+            const grid = document.getElementById('sceneGrid');
+            scenes.forEach((scene, index) => {
+                const col = document.createElement('div');
+                col.className = 'col-6';
+                col.innerHTML = `
+                    <div class="scene-card ${index === 0 ? 'active' : ''}" onclick="selectScene('${scene.name}', this)">
+                        <div class="scene-icon" style="color: ${scene.color}">
+                            <i class="fas ${scene.icon}"></i>
+                        </div>
+                        <div>${scene.name}</div>
+                    </div>
+                `;
+                grid.appendChild(col);
+            });
+        }
+
+        // 选择场景
+        function selectScene(sceneName, element) {
+            document.querySelectorAll('.scene-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            element.classList.add('active');
+            selectedScene = sceneName;
+        }
+
+        // 切换API配置显示
+        function toggleApiConfig() {
+            const configDiv = document.getElementById('apiConfig');
+            configDiv.style.display = configDiv.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // 选择模式
+        function selectMode(mode) {
+            currentMode = mode;
+            const demoMode = document.getElementById('demoMode');
+            const realMode = document.getElementById('realMode');
+            const apiKeySection = document.getElementById('apiKeySection');
+
+            if (mode === 'demo') {
+                demoMode.classList.add('active');
+                realMode.classList.remove('active');
+                apiKeySection.style.display = 'none';
+            } else {
+                demoMode.classList.remove('active');
+                realMode.classList.add('active');
+                apiKeySection.style.display = 'block';
+            }
+        }
+
+        // 生成图片（本地生成，确保能显示和下载）
+        function generateImage() {
+            const title = document.getElementById('titleInput').value || '识字小报';
+            const ratio = document.getElementById('ratioSelect').value;
+            const resolution = document.getElementById('resolutionSelect').value;
+
+            // 如果是正式模式，检查API Key
+            if (currentMode === 'real') {
+                apiKey = document.getElementById('apiKeyInput').value;
+                if (!apiKey || apiKey.length < 10) {
+                    alert('请输入有效的API Key！');
+                    return;
+                }
+                localStorage.setItem('kie_ai_api_key', apiKey);
+            }
+
+            // 显示加载状态
+            const resultPanel = document.getElementById('resultPanel');
+            resultPanel.innerHTML = `
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                    <h4>正在生成识字小报...</h4>
+                    <p class="text-muted">${currentMode === 'demo' ? '演示模式，约5-10秒' : '正式模式，约30-60秒'}</p>
+                    <div class="progress" style="width: 300px; margin: 20px auto;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            `;
+
+            // 生成Canvas图片
+            setTimeout(() => {
+                generateCanvasImage(title, selectedScene);
+            }, 1000);
+        }
+
+        // 生成Canvas图片（确保可以下载）
+        function generateCanvasImage(title, theme) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 1000;
+            const ctx = canvas.getContext('2d');
+
+            // 绘制整个场景背景（占满图片）
+            // 创建天空渐变
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            if (theme === '超市' || theme === '医院' || theme === '学校' || theme === '火车站') {
+                skyGradient.addColorStop(0, '#B0C4DE');  // 室内光线
+                skyGradient.addColorStop(1, '#E6E6FA');
+            } else {
+                skyGradient.addColorStop(0, '#87CEEB');  // 天空蓝
+                skyGradient.addColorStop(0.6, '#98D8E8');
+                skyGradient.addColorStop(1, '#B0E0E6');
+            }
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 根据场景绘制地面或地板
+            let groundColor, groundY;
+            switch(theme) {
+                case '超市':
+                case '医院':
+                case '学校':
+                case '火车站':
+                    groundColor = '#D3D3D3';
+                    groundY = canvas.height * 0.75;
+                    break;
+                case '公园':
+                case '动物园':
+                    groundColor = '#90EE90';
+                    groundY = canvas.height * 0.8;
+                    break;
+                default:
+                    groundColor = '#D3D3D3';
+                    groundY = canvas.height * 0.75;
+            }
+
+            // 绘制地面（带纹理）
+            drawGround(ctx, theme, groundColor, canvas.width, canvas.height, groundY);
+
+            // 绘制标题（半透明背景）
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(0, 0, canvas.width, 80);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 42px Microsoft YaHei, Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`《${title}》 - ${theme}`, canvas.width / 2, 50);
+
+            // 绘制详细的场景插图
+            drawDetailedScene(ctx, theme, canvas.width, canvas.height, groundY);
+
+            // 获取词汇并绘制在场景元素旁
+            const vocab = vocabularies[theme] || [];
+            drawVocabularyInScene(ctx, theme, vocab, canvas.width, canvas.height, groundY);
+
+            // 绘制底部信息（半透明）
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '16px Microsoft YaHei, Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('儿童识字小报 - 5-9岁适用', canvas.width / 2, canvas.height - 15);
+
+            // 获取图片数据
+            const imageData = canvas.toDataURL('image/png');
+
+            // 显示结果
+            showResult(imageData, title, theme);
+        }
+
+        // 绘制场景插图
+        function drawSceneIllustration(ctx, theme, centerX, centerY) {
+            ctx.save();
+            ctx.textAlign = 'center';
+
+            switch(theme) {
+                case '超市':
+                    // 绘制超市场景
+                    // 货架
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(centerX - 150, centerY - 80, 60, 120);
+                    ctx.fillRect(centerX - 80, centerY - 80, 60, 120);
+
+                    // 商品
+                    ctx.fillStyle = '#FF6B6B';
+                    ctx.beginPath();
+                    ctx.arc(centerX - 120, centerY - 50, 15, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#4ECDC4';
+                    ctx.fillRect(centerX - 50, centerY - 60, 30, 30);
+
+                    // 收银台
+                    ctx.fillStyle = '#95A5A6';
+                    ctx.fillRect(centerX + 50, centerY - 40, 100, 60);
+
+                    // 人物（简化）
+                    ctx.fillStyle = '#FDBCB4';
+                    ctx.beginPath();
+                    ctx.arc(centerX + 100, centerY - 80, 20, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+
+                case '医院':
+                    // 绘制医院场景
+                    // 病床
+                    ctx.fillStyle = '#D0D0D0';
+                    ctx.fillRect(centerX - 80, centerY - 20, 160, 80);
+
+                    // 医生
+                    ctx.fillStyle = '#FDBCB4';
+                    ctx.beginPath();
+                    ctx.arc(centerX - 100, centerY - 60, 25, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 医疗十字
+                    ctx.strokeStyle = '#E74C3C';
+                    ctx.lineWidth = 8;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX - 100, centerY - 90);
+                    ctx.lineTo(centerX - 100, centerY - 30);
+                    ctx.moveTo(centerX - 130, centerY - 60);
+                    ctx.lineTo(centerX - 70, centerY - 60);
+                    ctx.stroke();
+                    break;
+
+                case '公园':
+                    // 绘制公园场景
+                    // 树
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(centerX - 120, centerY - 40, 30, 80);
+                    ctx.fillStyle = '#228B22';
+                    ctx.beginPath();
+                    ctx.arc(centerX - 105, centerY - 50, 40, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 花朵
+                    const flowerColors = ['#FF69B4', '#FFD700', '#FF6347'];
+                    for(let i = 0; i < 5; i++) {
+                        ctx.fillStyle = flowerColors[i % flowerColors.length];
+                        ctx.beginPath();
+                        ctx.arc(centerX + (i - 2) * 40, centerY + 40, 12, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // 秋千
+                    ctx.strokeStyle = '#654321';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX + 100, centerY - 80);
+                    ctx.lineTo(centerX + 100, centerY);
+                    ctx.lineTo(centerX + 140, centerY - 60);
+                    ctx.stroke();
+                    break;
+
+                case '学校':
+                    // 绘制学校场景
+                    // 教学楼
+                    ctx.fillStyle = '#DEB887';
+                    ctx.fillRect(centerX - 100, centerY - 60, 200, 120);
+
+                    // 窗户
+                    ctx.fillStyle = '#87CEEB';
+                    for(let i = 0; i < 3; i++) {
+                        for(let j = 0; j < 2; j++) {
+                            ctx.fillRect(centerX - 80 + i * 60, centerY - 40 + j * 40, 30, 25);
+                        }
+                    }
+
+                    // 黑板
+                    ctx.fillStyle = '#2F4F4F';
+                    ctx.fillRect(centerX - 60, centerY - 20, 120, 50);
+                    break;
+
+                case '动物园':
+                    // 绘制动物园场景
+                    // 围栏
+                    ctx.strokeStyle = '#8B4513';
+                    ctx.lineWidth = 4;
+                    for(let i = 0; i < 3; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(centerX - 150 + i * 100, centerY - 50);
+                        ctx.lineTo(centerX - 150 + i * 100, centerY + 50);
+                        ctx.stroke();
+                    }
+
+                    // 动物（简化的狮子）
+                    ctx.fillStyle = '#DAA520';
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, 30, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 鬃毛
+                    ctx.strokeStyle = '#DAA520';
+                    ctx.lineWidth = 2;
+                    for(let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+                        ctx.beginPath();
+                        ctx.moveTo(centerX, centerY);
+                        ctx.lineTo(centerX + Math.cos(angle) * 35, centerY + Math.sin(angle) * 35);
+                        ctx.stroke();
+                    }
+                    break;
+
+                case '火车站':
+                    // 绘制火车站场景
+                    // 站台
+                    ctx.fillStyle = '#A9A9A9';
+                    ctx.fillRect(centerX - 150, centerY - 20, 300, 40);
+
+                    // 列车
+                    ctx.fillStyle = '#1E90FF';
+                    ctx.fillRect(centerX - 120, centerY - 40, 240, 30);
+
+                    // 窗户
+                    ctx.fillStyle = '#87CEEB';
+                    for(let i = 0; i < 5; i++) {
+                        ctx.fillRect(centerX - 100 + i * 40, centerY - 35, 25, 20);
+                    }
+
+                    // 站牌
+                    ctx.fillStyle = '#228B22';
+                    ctx.fillRect(centerX + 160, centerY - 80, 20, 100);
+                    ctx.fillStyle = 'white';
+                    ctx.font = '20px Arial';
+                    ctx.fillText('站', centerX + 170, centerY - 30);
+                    break;
+
+                default:
+                    // 默认场景
+                    ctx.fillStyle = '#CCCCCC';
+                    ctx.fillRect(centerX - 60, centerY - 40, 120, 80);
+                    ctx.fillStyle = '#333333';
+                    ctx.font = '24px Arial';
+                    ctx.fillText('场景', centerX, centerY);
+            }
+
+            ctx.restore();
+        }
+
+        // 绘制详细的场景
+        function drawDetailedScene(ctx, theme, canvasWidth, canvasHeight, groundY) {
+            ctx.save();
+
+            switch(theme) {
+                case '超市':
+                    // 背景：室内超市
+                    // 绘制远处的货架
+                    for (let i = 0; i < 3; i++) {
+                        const x = 150 + i * 250;
+                        const y = groundY - 250;
+                        drawShelf(ctx, x, y, 80, 200);
+                    }
+
+                    // 绘制收银台
+                    drawCashRegister(ctx, canvasWidth - 200, groundY - 80);
+
+                    // 绘制购物车
+                    drawShoppingCart(ctx, 100, groundY - 40);
+
+                    // 绘制商品陈列
+                    drawProductDisplay(ctx, 400, groundY - 60);
+
+                    // 绘制顾客
+                    drawPerson(ctx, 300, groundY - 20, '#FFB6C1');
+                    drawPerson(ctx, 500, groundY - 20, '#87CEEB');
+                    break;
+
+                case '医院':
+                    // 绘制医院建筑
+                    drawHospital(ctx, canvasWidth/2 - 150, groundY - 300);
+
+                    // 绘制救护车
+                    drawAmbulance(ctx, 100, groundY - 60);
+
+                    // 绘制医生和护士
+                    drawDoctor(ctx, canvasWidth - 200, groundY - 20);
+                    drawNurse(ctx, canvasWidth - 120, groundY - 20);
+
+                    // 绘制医院标识
+                    ctx.fillStyle = '#FF0000';
+                    ctx.beginPath();
+                    ctx.arc(canvasWidth/2, groundY - 350, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = 'bold 36px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('+', canvasWidth/2, groundY - 340);
+                    break;
+
+                case '公园':
+                    // 绘制太阳（带光晕效果）
+                    const sunX = canvasWidth - 150;
+                    const sunY = 150;
+
+                    // 外层光晕
+                    const haloGradient = ctx.createRadialGradient(sunX, sunY, 40, sunX, sunY, 100);
+                    haloGradient.addColorStop(0, 'rgba(255, 215, 0, 0.4)');
+                    haloGradient.addColorStop(0.5, 'rgba(255, 215, 0, 0.2)');
+                    haloGradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+                    ctx.fillStyle = haloGradient;
+                    ctx.beginPath();
+                    ctx.arc(sunX, sunY, 100, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 中层光晕
+                    ctx.fillStyle = 'rgba(255, 223, 0, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(sunX, sunY, 70, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 太阳主体（渐变）
+                    const sunGradient = ctx.createRadialGradient(sunX - 10, sunY - 10, 0, sunX, sunY, 50);
+                    sunGradient.addColorStop(0, '#FFFFE0');
+                    sunGradient.addColorStop(0.3, '#FFFACD');
+                    sunGradient.addColorStop(0.7, '#FFD700');
+                    sunGradient.addColorStop(1, '#FFA500');
+                    ctx.fillStyle = sunGradient;
+                    ctx.beginPath();
+                    ctx.arc(sunX, sunY, 50, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // 太阳光芒
+                    ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+                    ctx.lineWidth = 3;
+                    for (let i = 0; i < 12; i++) {
+                        const angle = i * 30 * Math.PI / 180;
+                        ctx.beginPath();
+                        ctx.moveTo(
+                            sunX + Math.cos(angle) * 60,
+                            sunY + Math.sin(angle) * 60
+                        );
+                        ctx.lineTo(
+                            sunX + Math.cos(angle) * 90,
+                            sunY + Math.sin(angle) * 90
+                        );
+                        ctx.stroke();
+                    }
+
+                    // 太阳表面纹理
+                    ctx.fillStyle = 'rgba(255, 140, 0, 0.3)';
+                    for (let i = 0; i < 5; i++) {
+                        ctx.beginPath();
+                        ctx.arc(
+                            sunX + (Math.random() - 0.5) * 40,
+                            sunY + (Math.random() - 0.5) * 40,
+                            Math.random() * 10 + 5,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+
+                    // 绘制云朵
+                    drawCloud(ctx, 150, 120);
+                    drawCloud(ctx, 400, 100);
+
+                    // 绘制大树
+                    drawTree(ctx, 200, groundY, 80);
+                    drawTree(ctx, 600, groundY, 100);
+
+                    // 绘制花丛
+                    drawFlower(ctx, 100, groundY - 20);
+                    drawFlower(ctx, 150, groundY - 15);
+                    drawFlower(ctx, 500, groundY - 20);
+
+                    // 绘制长椅
+                    drawBench(ctx, 350, groundY - 30);
+
+                    // 绘制秋千
+                    drawSwing(ctx, 450, groundY - 100);
+                    break;
+
+                case '学校':
+                    // 绘制教学楼
+                    drawSchool(ctx, canvasWidth/2 - 150, groundY - 350);
+
+                    // 绘制操场
+                    ctx.fillStyle = '#8B7355';
+                    ctx.fillRect(100, groundY - 50, 600, 50);
+
+                    // 绘制学生
+                    drawStudent(ctx, 150, groundY - 20);
+                    drawStudent(ctx, 200, groundY - 25);
+                    drawStudent(ctx, 550, groundY - 20);
+                    drawStudent(ctx, 600, groundY - 22);
+
+                    // 绘制老师
+                    drawTeacher(ctx, canvasWidth/2, groundY - 30);
+
+                    // 绘制旗杆
+                    ctx.strokeStyle = '#808080';
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.moveTo(100, groundY - 300);
+                    ctx.lineTo(100, groundY);
+                    ctx.stroke();
+
+                    // 绘制国旗
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(105, groundY - 300, 60, 40);
+                    break;
+
+                case '动物园':
+                    // 绘制动物园入口
+                    drawZooEntrance(ctx, canvasWidth/2 - 100, groundY - 250);
+
+                    // 绘制狮子
+                    drawLion(ctx, 150, groundY - 40);
+
+                    // 绘制大象
+                    drawElephant(ctx, 350, groundY - 30);
+
+                    // 绘制猴子
+                    drawMonkey(ctx, 200, groundY - 150);
+
+                    // 绘制熊猫
+                    drawPanda(ctx, 500, groundY - 40);
+
+                    // 绘制围栏
+                    for (let i = 0; i < 5; i++) {
+                        ctx.strokeStyle = '#8B4513';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.moveTo(50 + i * 150, groundY);
+                        ctx.lineTo(50 + i * 150, groundY - 100);
+                        ctx.stroke();
+                    }
+                    break;
+
+                case '火车站':
+                    // 绘制火车站建筑
+                    drawStation(ctx, canvasWidth/2 - 200, groundY - 250);
+
+                    // 绘制火车
+                    drawTrain(ctx, 100, groundY - 80);
+
+                    // 绘制轨道
+                    ctx.fillStyle = '#4A4A4A';
+                    ctx.fillRect(0, groundY - 10, canvasWidth, 20);
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.lineWidth = 2;
+                    for (let i = 0; i < canvasWidth; i += 40) {
+                        ctx.beginPath();
+                        ctx.moveTo(i, groundY);
+                        ctx.lineTo(i + 20, groundY);
+                        ctx.stroke();
+                    }
+
+                    // 绘制站牌
+                    drawSign(ctx, canvasWidth - 100, groundY - 200, '车站');
+                    break;
+            }
+
+            ctx.restore();
+        }
+
+        // 绘制词汇在场景中
+        function drawVocabularyInScene(ctx, theme, vocab, canvasWidth, canvasHeight, groundY) {
+            ctx.save();
+
+            // 设置文字样式
+            ctx.font = 'bold 18px Microsoft YaHei, Arial';
+            ctx.textAlign = 'center';
+
+            let elements = [];
+
+            // 根据场景获取元素位置
+            switch(theme) {
+                case '超市':
+                    elements = [
+                        { name: '货架', pinyin: 'huò jià', x: 190, y: groundY - 250 },
+                        { name: '收银台', pinyin: 'shōu yín tái', x: canvasWidth - 200, y: groundY - 100 },
+                        { name: '购物车', pinyin: 'gòu wù chē', x: 100, y: groundY },
+                        { name: '商品', pinyin: 'shāng pǐn', x: 400, y: groundY - 30 },
+                        { name: '顾客', pinyin: 'gù kè', x: 300, y: groundY }
+                    ];
+                    break;
+
+                case '医院':
+                    elements = [
+                        { name: '医院', pinyin: 'yī yuàn', x: canvasWidth/2, y: groundY - 380 },
+                        { name: '医生', pinyin: 'yī shēng', x: canvasWidth - 200, y: groundY + 20 },
+                        { name: '护士', pinyin: 'hù shi', x: canvasWidth - 120, y: groundY + 20 },
+                        { name: '救护车', pinyin: 'jiù hù chē', x: 150, y: groundY + 20 },
+                        { name: '病人', pinyin: 'bìng rén', x: 250, y: groundY + 20 }
+                    ];
+                    break;
+
+                case '公园':
+                    elements = [
+                        { name: '太阳', pinyin: 'tài yáng', x: canvasWidth - 150, y: 220 },
+                        { name: '云', pinyin: 'yún', x: 150, y: 150 },
+                        { name: '树', pinyin: 'shù', x: 200, y: groundY - 100 },
+                        { name: '花', pinyin: 'huā', x: 125, y: groundY },
+                        { name: '长椅', pinyin: 'cháng yǐ', x: 350, y: groundY },
+                        { name: '秋千', pinyin: 'qiū qiān', x: 450, y: groundY - 50 }
+                    ];
+                    break;
+
+                case '学校':
+                    elements = [
+                        { name: '学校', pinyin: 'xué xiào', x: canvasWidth/2, y: groundY - 400 },
+                        { name: '老师', pinyin: 'lǎo shī', x: canvasWidth/2, y: groundY + 20 },
+                        { name: '学生', pinyin: 'xué shēng', x: 175, y: groundY + 20 },
+                        { name: '操场', pinyin: 'cāo chǎng', x: 400, y: groundY - 10 },
+                        { name: '国旗', pinyin: 'guó qí', x: 135, y: groundY - 260 }
+                    ];
+                    break;
+
+                case '动物园':
+                    elements = [
+                        { name: '狮子', pinyin: 'shī zi', x: 150, y: groundY + 20 },
+                        { name: '大象', pinyin: 'dà xiàng', x: 350, y: groundY + 20 },
+                        { name: '猴子', pinyin: 'hóu zi', x: 200, y: groundY - 110 },
+                        { name: '熊猫', pinyin: 'xióng māo', x: 500, y: groundY + 20 },
+                        { name: '围栏', pinyin: 'wéi lán', x: 350, y: groundY - 80 }
+                    ];
+                    break;
+
+                case '火车站':
+                    elements = [
+                        { name: '火车', pinyin: 'huǒ chē', x: 250, y: groundY - 20 },
+                        { name: '站台', pinyin: 'zhàn tái', x: canvasWidth/2, y: groundY - 200 },
+                        { name: '轨道', pinyin: 'guǐ dào', x: canvasWidth/2, y: groundY + 30 },
+                        { name: '乘客', pinyin: 'chéng kè', x: 450, y: groundY + 20 },
+                        { name: '站牌', pinyin: 'zhàn pái', x: canvasWidth - 100, y: groundY - 150 }
+                    ];
+                    break;
+            }
+
+            // 绘制每个元素标签
+            elements.forEach((element, index) => {
+                // 绘制背景框
+                const textWidth = Math.max(element.name.length * 20, element.pinyin.length * 15);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillRect(element.x - textWidth/2 - 10, element.y - 25, textWidth + 20, 45);
+
+                // 绘制边框
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(element.x - textWidth/2 - 10, element.y - 25, textWidth + 20, 45);
+
+                // 绘制中文
+                ctx.fillStyle = '#333333';
+                ctx.font = 'bold 20px Microsoft YaHei, SimHei';
+                ctx.fillText(element.name, element.x, element.y);
+
+                // 绘制拼音
+                ctx.fillStyle = '#666666';
+                ctx.font = 'italic 14px Microsoft YaHei';
+                ctx.fillText(element.pinyin, element.x, element.y + 18);
+            });
+
+            ctx.restore();
+        }
+
+        // 绘制各种物体的辅助函数
+        function drawShelf(ctx, x, y, width, height) {
+            // 主体框架
+            const gradient = ctx.createLinearGradient(x - width/2, 0, x + width/2, 0);
+            gradient.addColorStop(0, '#654321');
+            gradient.addColorStop(0.5, '#8B4513');
+            gradient.addColorStop(1, '#654321');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x - width/2, y, width, height);
+
+            // 金属立柱
+            ctx.fillStyle = '#C0C0C0';
+            ctx.fillRect(x - width/2 + 5, y, 8, height);
+            ctx.fillRect(x + width/2 - 13, y, 8, height);
+
+            // 层板（木纹效果）
+            for (let i = 0; i < 4; i++) {
+                const boardY = y + 10 + i * 45;
+                // 层板主体
+                const boardGradient = ctx.createLinearGradient(0, boardY, 0, boardY + 8);
+                boardGradient.addColorStop(0, '#D2B48C');
+                boardGradient.addColorStop(0.5, '#F5DEB3');
+                boardGradient.addColorStop(1, '#D2B48C');
+                ctx.fillStyle = boardGradient;
+                ctx.fillRect(x - width/2 + 13, boardY, width - 26, 8);
+
+                // 木纹
+                ctx.strokeStyle = '#CD853F';
+                ctx.lineWidth = 0.5;
+                for (let j = 0; j < width - 26; j += 5) {
+                    ctx.beginPath();
+                    ctx.moveTo(x - width/2 + 13 + j, boardY);
+                    ctx.lineTo(x - width/2 + 13 + j + 2, boardY + 8);
+                    ctx.stroke();
+                }
+            }
+
+            // 商品（更真实的外观）
+            const products = [
+                { color: '#FF6B6B', size: 20 },  // 红色盒子
+                { color: '#4ECDC4', size: 18 },  // 青色罐头
+                { color: '#FFD93D', size: 22 },  // 黄色袋子
+                { color: '#6BCF7F', size: 19 },  // 绿色瓶子
+                { color: '#FF69B4', size: 21 },  // 粉色盒子
+                { color: '#9370DB', size: 17 }   // 紫色罐头
+            ];
+
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 2; j++) {
+                    const productIndex = (i * 2 + j) % products.length;
+                    const product = products[productIndex];
+                    const px = x - width/2 + 20 + j * 35;
+                    const py = y + 20 + i * 45;
+
+                    // 商品主体
+                    ctx.fillStyle = product.color;
+                    if (productIndex % 2 === 0) {
+                        // 盒子
+                        ctx.fillRect(px - product.size/2, py - product.size/2, product.size, product.size);
+                        // 高光
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                        ctx.fillRect(px - product.size/2 + 2, py - product.size/2 + 2, product.size/3, product.size/3);
+                    } else {
+                        // 罐头/瓶子
+                        ctx.beginPath();
+                        ctx.ellipse(px, py, product.size/2, product.size/2.5, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        // 瓶盖
+                        ctx.fillStyle = '#C0C0C0';
+                        ctx.beginPath();
+                        ctx.ellipse(px, py - product.size/2.5, product.size/2.5, product.size/6, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+        }
+
+        function drawCashRegister(ctx, x, y) {
+            // 主体（金属质感）
+            const bodyGradient = ctx.createLinearGradient(x - 40, y, x + 40, y);
+            bodyGradient.addColorStop(0, '#A0A0A0');
+            bodyGradient.addColorStop(0.5, '#95A5A6');
+            bodyGradient.addColorStop(1, '#808080');
+            ctx.fillStyle = bodyGradient;
+            ctx.fillRect(x - 40, y - 40, 80, 60);
+
+            // 顶部边框
+            ctx.fillStyle = '#708090';
+            ctx.fillRect(x - 40, y - 40, 80, 8);
+
+            // 屏幕（带反光效果）
+            const screenGradient = ctx.createLinearGradient(x - 30, y - 30, x + 30, y);
+            screenGradient.addColorStop(0, '#B0E0E6');
+            screenGradient.addColorStop(0.5, '#87CEEB');
+            screenGradient.addColorStop(1, '#6495ED');
+            ctx.fillStyle = screenGradient;
+            ctx.fillRect(x - 30, y - 30, 60, 30);
+
+            // 屏幕反光
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.fillRect(x - 30, y - 30, 60, 10);
+
+            // 屏幕显示内容
+            ctx.fillStyle = '#00FF00';
+            ctx.font = 'bold 10px monospace';
+            ctx.fillText('￥128.50', x, y - 15);
+            ctx.fillText('欢迎光临', x, y - 5);
+
+            // 键盘区域（深色背景）
+            ctx.fillStyle = '#404040';
+            ctx.fillRect(x - 35, y + 5, 70, 25);
+
+            // 键盘按键
+            const keys = [
+                ['7', '8', '9', '×'],
+                ['4', '5', '6', '÷'],
+                ['1', '2', '3', '-'],
+                ['0', '.', '=', '+']
+            ];
+
+            ctx.font = 'bold 10px Arial';
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    // 按键背景
+                    const keyGradient = ctx.createRadialGradient(
+                        x - 25 + j * 17, y + 8 + i * 6, 0,
+                        x - 25 + j * 17, y + 8 + i * 6, 7
+                    );
+                    keyGradient.addColorStop(0, '#F0F0F0');
+                    keyGradient.addColorStop(1, '#D0D0D0');
+                    ctx.fillStyle = keyGradient;
+                    ctx.fillRect(x - 28 + j * 17, y + 6 + i * 6, 14, 5);
+
+                    // 按键文字
+                    ctx.fillStyle = '#000000';
+                    ctx.fillText(keys[i][j], x - 21 + j * 17, y + 10 + i * 6);
+                }
+            }
+
+            // 出钞口
+            ctx.fillStyle = '#2C2C2C';
+            ctx.fillRect(x - 20, y - 5, 40, 8);
+            ctx.strokeStyle = '#606060';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x - 20, y - 5, 40, 8);
+
+            // 扫描器
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(x + 45, y - 35, 5, 20);
+            // 扫描线
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(x + 47, y - 30);
+            ctx.lineTo(x + 47, y - 10);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawShoppingCart(ctx, x, y) {
+            // 车身（金属网状效果）
+            const bodyGradient = ctx.createLinearGradient(x - 30, y - 30, x + 30, y + 10);
+            bodyGradient.addColorStop(0, '#D3D3D3');
+            bodyGradient.addColorStop(0.5, '#C0C0C0');
+            bodyGradient.addColorStop(1, '#A9A9A9');
+            ctx.fillStyle = bodyGradient;
+            ctx.fillRect(x - 30, y - 30, 60, 40);
+
+            // 网格效果
+            ctx.strokeStyle = '#999999';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < 6; i++) {
+                // 垂直线
+                ctx.beginPath();
+                ctx.moveTo(x - 25 + i * 10, y - 25);
+                ctx.lineTo(x - 25 + i * 10, y + 5);
+                ctx.stroke();
+                // 水平线
+                ctx.beginPath();
+                ctx.moveTo(x - 25, y - 25 + i * 8);
+                ctx.lineTo(x + 25, y - 25 + i * 8);
+                ctx.stroke();
+            }
+
+            // 车架底部
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(x - 35, y + 10, 70, 5);
+
+            // 把手（U形）
+            ctx.strokeStyle = '#606060';
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            // 左侧把手
+            ctx.moveTo(x - 30, y - 30);
+            ctx.quadraticCurveTo(x - 40, y - 40, x - 40, y - 55);
+            // 顶部横杆
+            ctx.lineTo(x + 40, y - 55);
+            // 右侧把手
+            ctx.quadraticCurveTo(x + 40, y - 40, x + 30, y - 30);
+            ctx.stroke();
+
+            // 把手防滑套
+            ctx.fillStyle = '#FF6347';
+            ctx.fillRect(x - 42, y - 58, 8, 10);
+            ctx.fillRect(x + 34, y - 58, 8, 10);
+
+            // 车轮架
+            ctx.strokeStyle = '#505050';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x - 30, y + 15);
+            ctx.lineTo(x - 25, y + 25);
+            ctx.moveTo(x + 30, y + 15);
+            ctx.lineTo(x + 25, y + 25);
+            ctx.stroke();
+
+            // 车轮（更真实）
+            const wheelGradient = ctx.createRadialGradient(x - 25, y + 28, 0, x - 25, y + 28, 8);
+            wheelGradient.addColorStop(0, '#404040');
+            wheelGradient.addColorStop(0.7, '#202020');
+            wheelGradient.addColorStop(1, '#000000');
+            ctx.fillStyle = wheelGradient;
+            // 左轮
+            ctx.beginPath();
+            ctx.arc(x - 25, y + 28, 8, 0, Math.PI * 2);
+            ctx.fill();
+            // 轮毂
+            ctx.fillStyle = '#808080';
+            ctx.beginPath();
+            ctx.arc(x - 25, y + 28, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 右轮
+            ctx.fillStyle = wheelGradient;
+            ctx.beginPath();
+            ctx.arc(x + 25, y + 28, 8, 0, Math.PI * 2);
+            ctx.fill();
+            // 轮毂
+            ctx.fillStyle = '#808080';
+            ctx.beginPath();
+            ctx.arc(x + 25, y + 28, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 车轮滚动效果
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(x - 25, y + 28, 6, -Math.PI/4, Math.PI/4);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(x + 25, y + 28, 6, -Math.PI/4, Math.PI/4);
+            ctx.stroke();
+
+            // 购物篮（可选商品）
+            ctx.fillStyle = '#FFB6C1';
+            ctx.fillRect(x - 15, y - 20, 8, 8);
+            ctx.fillStyle = '#98FB98';
+            ctx.beginPath();
+            ctx.arc(x, y - 18, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawProductDisplay(ctx, x, y) {
+            // 展示架
+            ctx.fillStyle = '#D3D3D3';
+            ctx.fillRect(x - 40, y - 20, 80, 40);
+            // 商品
+            const colors = ['#FF6B6B', '#4ECDC4', '#FFD93D'];
+            for (let i = 0; i < 6; i++) {
+                ctx.fillStyle = colors[i % 3];
+                ctx.beginPath();
+                ctx.arc(x - 30 + i * 12, y - 5, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawPerson(ctx, x, y, color) {
+            // 头
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y - 35, 12, 0, Math.PI * 2);
+            ctx.fill();
+            // 身体
+            ctx.fillStyle = ['#FF9999', '#9999FF', '#99FF99', '#FFFF99'][Math.floor(Math.random() * 4)];
+            ctx.fillRect(x - 15, y - 25, 30, 40);
+            // 腿
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(x - 12, y + 15, 10, 25);
+            ctx.fillRect(x + 2, y + 15, 10, 25);
+        }
+
+        function drawHospital(ctx, x, y) {
+            // 主楼
+            ctx.fillStyle = '#F0F0F0';
+            ctx.fillRect(x, y, 300, 250);
+            // 窗户
+            ctx.fillStyle = '#87CEEB';
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 4; j++) {
+                    ctx.fillRect(x + 20 + i * 90, y + 20 + j * 50, 40, 30);
+                }
+            }
+            // 门
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x + 125, y + 180, 50, 70);
+            // 十字标志
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(x + 125, y - 40, 50, 15);
+            ctx.fillRect(x + 137, y - 52, 26, 40);
+        }
+
+        function drawAmbulance(ctx, x, y) {
+            // 车身
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x - 60, y - 40, 120, 50);
+            // 红十字
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(x - 10, y - 30, 20, 10);
+            ctx.fillRect(x - 2, y - 38, 4, 25);
+            // 车窗
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(x - 50, y - 35, 25, 15);
+            // 车轮
+            ctx.fillStyle = '#333333';
+            ctx.beginPath();
+            ctx.arc(x - 35, y + 10, 8, 0, Math.PI * 2);
+            ctx.arc(x + 35, y + 10, 8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawDoctor(ctx, x, y) {
+            // 头
+            ctx.fillStyle = '#FDBCB4';
+            ctx.beginPath();
+            ctx.arc(x, y - 35, 10, 0, Math.PI * 2);
+            ctx.fill();
+            // 白大褂
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x - 12, y - 25, 24, 35);
+            // 腿
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(x - 10, y + 10, 8, 20);
+            ctx.fillRect(x + 2, y + 10, 8, 20);
+            // 听诊器
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x - 5, y - 20, 3, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        function drawNurse(ctx, x, y) {
+            // 头
+            ctx.fillStyle = '#FDBCB4';
+            ctx.beginPath();
+            ctx.arc(x, y - 35, 10, 0, Math.PI * 2);
+            ctx.fill();
+            // 护士帽
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x - 12, y - 45, 24, 8);
+            // 粉色制服
+            ctx.fillStyle = '#FFB6C1';
+            ctx.fillRect(x - 12, y - 25, 24, 35);
+            // 腿
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(x - 10, y + 10, 8, 20);
+            ctx.fillRect(x + 2, y + 10, 8, 20);
+        }
+
+        function drawCloud(ctx, x, y) {
+            // 云朵主体（多个大小不一的圆形组合）
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+
+            // 底部大圆
+            ctx.beginPath();
+            ctx.arc(x - 20, y + 10, 35, 0, Math.PI * 2);
+            ctx.arc(x + 20, y + 10, 35, 0, Math.PI * 2);
+            ctx.arc(x + 50, y + 10, 28, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 中部圆
+            ctx.beginPath();
+            ctx.arc(x + 10, y, 40, 0, Math.PI * 2);
+            ctx.arc(x + 35, y - 5, 32, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 顶部小圆
+            ctx.beginPath();
+            ctx.arc(x - 5, y - 15, 25, 0, Math.PI * 2);
+            ctx.arc(x + 20, y - 20, 28, 0, Math.PI * 2);
+            ctx.arc(x + 45, y - 10, 22, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 添加云朵阴影效果
+            ctx.fillStyle = 'rgba(220, 220, 220, 0.3)';
+            ctx.beginPath();
+            ctx.arc(x + 15, y + 15, 20, 0, Math.PI * 2);
+            ctx.arc(x + 40, y + 10, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 添加高光效果
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.beginPath();
+            ctx.arc(x - 10, y - 10, 15, 0, Math.PI * 2);
+            ctx.arc(x + 25, y - 25, 18, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawTree(ctx, x, y, size) {
+            // 树干（更真实的纹理）
+            const trunkGradient = ctx.createLinearGradient(x - size/6, 0, x + size/6, 0);
+            trunkGradient.addColorStop(0, '#654321');
+            trunkGradient.addColorStop(0.3, '#8B4513');
+            trunkGradient.addColorStop(0.7, '#A0522D');
+            trunkGradient.addColorStop(1, '#704214');
+            ctx.fillStyle = trunkGradient;
+            ctx.fillRect(x - size/6, y - size/2, size/3, size/2);
+
+            // 树干纹理
+            ctx.strokeStyle = '#5D4037';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x - size/6 + 3 + i * size/15, y - size/2);
+                ctx.quadraticCurveTo(
+                    x - size/6 + 5 + i * size/15, y - size/3,
+                    x - size/6 + 2 + i * size/15, y
+                );
+                ctx.stroke();
+            }
+
+            // 树冠（多层次，更自然）
+            const leaves = ['#228B22', '#2E8B57', '#3CB371', '#006400', '#32CD32'];
+
+            // 底层大叶子
+            for (let i = 0; i < 3; i++) {
+                ctx.fillStyle = leaves[i % leaves.length];
+                ctx.globalAlpha = 0.9;
+                ctx.beginPath();
+                ctx.arc(
+                    x + (i - 1) * size/2.5,
+                    y - size * 0.8,
+                    size * 0.35,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+            }
+
+            // 中层叶子
+            for (let i = 0; i < 4; i++) {
+                ctx.fillStyle = leaves[(i + 2) % leaves.length];
+                ctx.globalAlpha = 0.95;
+                ctx.beginPath();
+                ctx.arc(
+                    x + (i - 1.5) * size/3,
+                    y - size * 1.1,
+                    size * 0.3,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+            }
+
+            // 顶层叶子
+            ctx.fillStyle = leaves[0];
+            ctx.globalAlpha = 1;
+            ctx.beginPath();
+            ctx.arc(x, y - size * 1.3, size * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.globalAlpha = 1;
+
+            // 树冠高光效果
+            const highlightGradient = ctx.createRadialGradient(
+                x - size/6, y - size, 0,
+                x - size/6, y - size, size/3
+            );
+            highlightGradient.addColorStop(0, 'rgba(144, 238, 144, 0.4)');
+            highlightGradient.addColorStop(1, 'rgba(144, 238, 144, 0)');
+            ctx.fillStyle = highlightGradient;
+            ctx.beginPath();
+            ctx.arc(x, y - size, size/2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 添加一些水果
+            if (Math.random() > 0.5) {
+                ctx.fillStyle = '#FF6347';
+                for (let i = 0; i < 3; i++) {
+                    ctx.beginPath();
+                    ctx.arc(
+                        x + (Math.random() - 0.5) * size,
+                        y - size * 0.8 + (Math.random() - 0.5) * size/2,
+                        5,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawFlower(ctx, x, y) {
+            // 花茎（带渐变和弯曲）
+            ctx.strokeStyle = '#228B22';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            // 自然弯曲的茎
+            ctx.quadraticCurveTo(x + 3, y - 15, x, y - 30);
+            ctx.stroke();
+
+            // 叶子
+            ctx.fillStyle = '#32CD32';
+            ctx.beginPath();
+            ctx.ellipse(x - 5, y - 15, 8, 3, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + 5, y - 20, 8, 3, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 花瓣（渐变色）
+            const petalColors = [
+                { main: '#FF69B4', edge: '#FF1493' },
+                { main: '#FFB6C1', edge: '#FF69B4' },
+                { main: '#FFA07A', edge: '#FF7F50' },
+                { main: '#DDA0DD', edge: '#9370DB' }
+            ];
+            const colorScheme = petalColors[Math.floor(Math.random() * petalColors.length)];
+
+            // 绘制花瓣（更自然）
+            for (let i = 0; i < 6; i++) {
+                const angle = i * 60 * Math.PI / 180;
+                const petalX = x + Math.cos(angle) * 12;
+                const petalY = y - 30 + Math.sin(angle) * 12;
+
+                // 花瓣渐变
+                const petalGradient = ctx.createRadialGradient(petalX, petalY, 0, petalX, petalY, 10);
+                petalGradient.addColorStop(0, colorScheme.main);
+                petalGradient.addColorStop(1, colorScheme.edge);
+
+                ctx.fillStyle = petalGradient;
+                ctx.beginPath();
+                // 心形花瓣
+                ctx.moveTo(petalX, petalY);
+                ctx.bezierCurveTo(
+                    petalX - 8, petalY - 8,
+                    petalX - 8, petalY + 2,
+                    petalX, petalY + 10
+                );
+                ctx.bezierCurveTo(
+                    petalX + 8, petalY + 2,
+                    petalX + 8, petalY - 8,
+                    petalX, petalY
+                );
+                ctx.fill();
+            }
+
+            // 花心（带纹理）
+            const centerGradient = ctx.createRadialGradient(x, y - 30, 0, x, y - 30, 6);
+            centerGradient.addColorStop(0, '#FFEB3B');
+            centerGradient.addColorStop(0.5, '#FFC107');
+            centerGradient.addColorStop(1, '#FF9800');
+            ctx.fillStyle = centerGradient;
+            ctx.beginPath();
+            ctx.arc(x, y - 30, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 花心点
+            ctx.fillStyle = '#FF5722';
+            for (let i = 0; i < 8; i++) {
+                const dotAngle = i * 45 * Math.PI / 180;
+                ctx.beginPath();
+                ctx.arc(
+                    x + Math.cos(dotAngle) * 3,
+                    y - 30 + Math.sin(dotAngle) * 3,
+                    0.5,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+            }
+        }
+
+        function drawBench(ctx, x, y) {
+            // 座板
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x - 60, y - 20, 120, 15);
+            // 靠背
+            ctx.fillRect(x - 60, y - 50, 120, 8);
+            // 腿
+            ctx.fillRect(x - 50, y - 20, 8, 30);
+            ctx.fillRect(x + 42, y - 20, 8, 30);
+        }
+
+        function drawSwing(ctx, x, y) {
+            // 支架
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(x - 40, y);
+            ctx.lineTo(x - 30, y - 80);
+            ctx.moveTo(x + 40, y);
+            ctx.lineTo(x + 30, y - 80);
+            ctx.stroke();
+            // 横梁
+            ctx.fillRect(x - 30, y - 85, 60, 8);
+            // 链条
+            ctx.strokeStyle = '#666666';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x - 10, y - 77);
+            ctx.lineTo(x - 10, y - 30);
+            ctx.moveTo(x + 10, y - 77);
+            ctx.lineTo(x + 10, y - 30);
+            ctx.stroke();
+            // 座位
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x - 20, y - 35, 40, 8);
+        }
+
+        function drawSchool(ctx, x, y) {
+            // 主楼
+            ctx.fillStyle = '#DEB887';
+            ctx.fillRect(x, y, 300, 300);
+            // 屋顶
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.moveTo(x - 20, y);
+            ctx.lineTo(x + 150, y - 80);
+            ctx.lineTo(x + 320, y);
+            ctx.closePath();
+            ctx.fill();
+            // 窗户
+            ctx.fillStyle = '#87CEEB';
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    ctx.fillRect(x + 30 + i * 90, y + 30 + j * 70, 40, 40);
+                }
+            }
+            // 门
+            ctx.fillStyle = '#654321';
+            ctx.fillRect(x + 125, y + 220, 50, 80);
+        }
+
+        function drawStudent(ctx, x, y) {
+            // 头
+            ctx.fillStyle = '#FDBCB4';
+            ctx.beginPath();
+            ctx.arc(x, y - 20, 8, 0, Math.PI * 2);
+            ctx.fill();
+            // 身体（校服）
+            ctx.fillStyle = ['#4169E1', '#FF6347'][Math.floor(Math.random() * 2)];
+            ctx.fillRect(x - 10, y - 12, 20, 25);
+            // 腿
+            ctx.fillStyle = '#333333';
+            ctx.fillRect(x - 8, y + 13, 6, 15);
+            ctx.fillRect(x + 2, y + 13, 6, 15);
+        }
+
+        function drawTeacher(ctx, x, y) {
+            // 头
+            ctx.fillStyle = '#FDBCB4';
+            ctx.beginPath();
+            ctx.arc(x, y - 25, 10, 0, Math.PI * 2);
+            ctx.fill();
+            // 头发
+            ctx.fillStyle = '#333333';
+            ctx.beginPath();
+            ctx.arc(x, y - 28, 10, Math.PI, 0);
+            ctx.fill();
+            // 衬衫
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x - 12, y - 15, 24, 30);
+            // 裙子/裤子
+            ctx.fillStyle = '#4169E1';
+            ctx.fillRect(x - 12, y + 15, 24, 20);
+            // 腿
+            ctx.fillStyle = '#FDBCB4';
+            ctx.fillRect(x - 8, y + 35, 6, 15);
+            ctx.fillRect(x + 2, y + 35, 6, 15);
+            // 书本
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(x + 15, y - 5, 15, 10);
+        }
+
+        function drawLion(ctx, x, y) {
+            // 身体
+            ctx.fillStyle = '#DAA520';
+            ctx.beginPath();
+            ctx.ellipse(x, y, 40, 25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 头
+            ctx.beginPath();
+            ctx.arc(x - 30, y - 10, 20, 0, Math.PI * 2);
+            ctx.fill();
+            // 鬃毛
+            ctx.strokeStyle = '#B8860B';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 8; i++) {
+                const angle = i * 45 * Math.PI / 180;
+                ctx.beginPath();
+                ctx.moveTo(x - 30 + Math.cos(angle) * 15, y - 10 + Math.sin(angle) * 15);
+                ctx.lineTo(x - 30 + Math.cos(angle) * 25, y - 10 + Math.sin(angle) * 25);
+                ctx.stroke();
+            }
+            // 尾巴
+            ctx.beginPath();
+            ctx.moveTo(x + 40, y);
+            ctx.quadraticCurveTo(x + 60, y - 20, x + 70, y);
+            ctx.stroke();
+        }
+
+        function drawElephant(ctx, x, y) {
+            // 身体
+            ctx.fillStyle = '#808080';
+            ctx.beginPath();
+            ctx.ellipse(x, y, 50, 35, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 头
+            ctx.beginPath();
+            ctx.ellipse(x - 40, y - 10, 25, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 象鼻
+            ctx.beginPath();
+            ctx.moveTo(x - 55, y - 5);
+            ctx.quadraticCurveTo(x - 70, y + 10, x - 65, y + 25);
+            ctx.lineWidth = 15;
+            ctx.stroke();
+            // 耳朵
+            ctx.beginPath();
+            ctx.ellipse(x - 40, y - 20, 20, 30, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x - 40, y, 20, 30, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawMonkey(ctx, x, y) {
+            // 身体
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.ellipse(x, y, 20, 25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 头
+            ctx.beginPath();
+            ctx.arc(x, y - 30, 15, 0, Math.PI * 2);
+            ctx.fill();
+            // 尾巴
+            ctx.beginPath();
+            ctx.moveTo(x + 20, y);
+            ctx.quadraticCurveTo(x + 35, y - 15, x + 30, y - 30);
+            ctx.lineWidth = 8;
+            ctx.stroke();
+            // 手臂（抓着树枝）
+            ctx.beginPath();
+            ctx.moveTo(x - 15, y - 10);
+            ctx.lineTo(x - 35, y - 40);
+            ctx.stroke();
+            // 腿
+            ctx.beginPath();
+            ctx.moveTo(x - 8, y + 25);
+            ctx.lineTo(x - 10, y + 40);
+            ctx.moveTo(x + 8, y + 25);
+            ctx.lineTo(x + 10, y + 40);
+            ctx.stroke();
+        }
+
+        function drawPanda(ctx, x, y) {
+            // 身体（白色）
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.ellipse(x, y, 35, 30, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 头
+            ctx.beginPath();
+            ctx.arc(x, y - 30, 20, 0, Math.PI * 2);
+            ctx.fill();
+            // 黑耳朵
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(x - 18, y - 40, 10, 0, Math.PI * 2);
+            ctx.arc(x + 18, y - 40, 10, 0, Math.PI * 2);
+            ctx.fill();
+            // 黑眼圈
+            ctx.beginPath();
+            ctx.ellipse(x - 8, y - 30, 8, 10, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + 8, y - 30, 8, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 眼睛
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(x - 8, y - 30, 3, 0, Math.PI * 2);
+            ctx.arc(x + 8, y - 30, 3, 0, Math.PI * 2);
+            ctx.fill();
+            // 黑鼻子
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(x, y - 20, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawZooEntrance(ctx, x, y) {
+            // 入口建筑
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x, y, 200, 200);
+            // 拱门
+            ctx.fillStyle = '#87CEEB';
+            ctx.beginPath();
+            ctx.arc(x + 100, y + 200, 80, Math.PI, 0);
+            ctx.fill();
+            // 标志牌
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x + 50, y + 50, 100, 60);
+            ctx.fillStyle = '#228B22';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('ZOO', x + 100, y + 85);
+        }
+
+        function drawStation(ctx, x, y) {
+            // 车站建筑
+            ctx.fillStyle = '#F0F0F0';
+            ctx.fillRect(x, y, 400, 200);
+            // 屋顶
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x - 20, y - 30, 440, 30);
+            // 支柱
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(x + 20, y, 15, 200);
+            ctx.fillRect(x + 365, y, 15, 200);
+            // 窗户
+            ctx.fillStyle = '#87CEEB';
+            for (let i = 0; i < 4; i++) {
+                ctx.fillRect(x + 50 + i * 80, y + 30, 50, 60);
+            }
+            // 钟
+            ctx.beginPath();
+            ctx.arc(x + 200, y + 100, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('12', x + 200, y + 90);
+        }
+
+        function drawTrain(ctx, x, y) {
+            // 车头
+            ctx.fillStyle = '#E74C3C';
+            ctx.fillRect(x, y - 50, 120, 60);
+            // 驾驶室
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(x + 70, y - 40, 30, 25);
+            // 车身
+            ctx.fillStyle = ['#3498DB', '#2ECC71', '#F39C12'][Math.floor(Math.random() * 3)];
+            for (let i = 0; i < 3; i++) {
+                ctx.fillRect(x + 120 + i * 80, y - 40, 75, 50);
+                // 窗户
+                ctx.fillStyle = '#87CEEB';
+                ctx.fillRect(x + 130 + i * 80, y - 30, 55, 20);
+                ctx.fillStyle = ['#3498DB', '#2ECC71', '#F39C12'][Math.floor(Math.random() * 3)];
+            }
+            // 车轮
+            ctx.fillStyle = '#333333';
+            for (let i = 0; i < 8; i++) {
+                ctx.beginPath();
+                ctx.arc(x + 30 + i * 70, y + 10, 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawSign(ctx, x, y, text) {
+            // 立柱
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(x - 5, y, 10, 150);
+            // 牌子
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(x - 40, y - 60, 80, 60);
+            // 边框
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x - 40, y - 60, 80, 60);
+            // 文字
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 20px Microsoft YaHei';
+            ctx.textAlign = 'center';
+            ctx.fillText(text, x, y - 20);
+        }
+
+        // 绘制地面（带纹理）
+        function drawGround(ctx, theme, baseColor, canvasWidth, canvasHeight, groundY) {
+            // 基础地面
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(0, groundY, canvasWidth, canvasHeight - groundY);
+
+            if (theme === '公园' || theme === '动物园') {
+                // 草地纹理
+                const grassColors = ['#7CFC00', '#7FFF00', '#ADFF2F', '#9ACD32', '#90EE90'];
+
+                // 绘制草地斑块
+                for (let x = 0; x < canvasWidth; x += 30) {
+                    for (let y = groundY; y < canvasHeight; y += 25) {
+                        if (Math.random() > 0.3) {
+                            ctx.fillStyle = grassColors[Math.floor(Math.random() * grassColors.length)];
+                            ctx.globalAlpha = 0.6 + Math.random() * 0.4;
+                            ctx.beginPath();
+                            ctx.arc(
+                                x + Math.random() * 30,
+                                y + Math.random() * 25,
+                                15 + Math.random() * 10,
+                                0,
+                                Math.PI * 2
+                            );
+                            ctx.fill();
+                        }
+                    }
+                }
+                ctx.globalAlpha = 1;
+
+                // 添加草叶
+                ctx.strokeStyle = '#228B22';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 200; i++) {
+                    const grassX = Math.random() * canvasWidth;
+                    const grassY = groundY + Math.random() * (canvasHeight - groundY);
+                    const grassHeight = 5 + Math.random() * 10;
+
+                    ctx.beginPath();
+                    ctx.moveTo(grassX, grassY);
+                    ctx.quadraticCurveTo(
+                        grassX - 2, grassY - grassHeight/2,
+                        grassX + Math.random() * 4 - 2, grassY - grassHeight
+                    );
+                    ctx.stroke();
+                }
+            } else {
+                // 室内地板（瓷砖效果）
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.lineWidth = 1;
+
+                // 横向瓷砖线
+                for (let y = groundY; y < canvasHeight; y += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvasWidth, y);
+                    ctx.stroke();
+                }
+
+                // 纵向瓷砖线
+                for (let x = 0; x < canvasWidth; x += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, groundY);
+                    ctx.lineTo(x, canvasHeight);
+                    ctx.stroke();
+                }
+
+                // 添加反光效果
+                const shineGradient = ctx.createLinearGradient(0, groundY, canvasWidth, groundY);
+                shineGradient.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+                shineGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
+                shineGradient.addColorStop(1, 'rgba(255, 255, 255, 0.1)');
+                ctx.fillStyle = shineGradient;
+                ctx.fillRect(0, groundY, canvasWidth, 10);
+            }
+        }
+
+        // 显示结果
+        function showResult(imageData, title, theme) {
+            const resultPanel = document.getElementById('resultPanel');
+
+            resultPanel.innerHTML = `
+                <div class="result-image-container">
+                    <h4 class="mb-4">
+                        <i class="fas fa-check-circle text-success"></i> 生成完成！
+                    </h4>
+                    <img src="${imageData}" class="result-image" alt="${title}">
+
+                    <div class="action-buttons">
+                        <a href="${imageData}" download="${title}_${theme}.png" class="action-btn download-btn">
+                            <i class="fas fa-download"></i>
+                            下载图片
+                        </a>
+                        <button class="action-btn view-btn" onclick="viewInNewWindow('${imageData}')">
+                            <i class="fas fa-external-link-alt"></i>
+                            新窗口查看
+                        </button>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>小报信息</h5>
+                        <p><strong>标题：</strong>${title}</p>
+                        <p><strong>场景：</strong>${theme}</p>
+                        <p><strong>模式：</strong>${currentMode === 'demo' ? '演示模式' : '正式模式'}</p>
+                        <p><strong>生成时间：</strong>${new Date().toLocaleString()}</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <h6>提示：右键点击图片也可以选择"图片另存为"</h6>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 新窗口查看图片
+        function viewInNewWindow(imageData) {
+            const win = window.open();
+            win.document.write(`<img src="${imageData}" style="max-width:100%;">`);
+        }
+
+        // 显示提示词预览
+        function showPromptPreview() {
+            const title = document.getElementById('titleInput').value || '识字小报';
+            const prompt = generatePrompt(selectedScene, title);
+
+            document.getElementById('promptContent').textContent = prompt;
+            const modal = new bootstrap.Modal(document.getElementById('promptModal'));
+            modal.show();
+        }
+
+        // 生成提示词
+        function generatePrompt(scene, title) {
+            const vocab = vocabularies[scene] || [];
+            return `请生成一张儿童识字小报《${scene}》，竖版 A4，学习小报版式，适合 5–9 岁孩子 认字与看图识物。
+
+# 一、小报标题区（顶部）
+**顶部居中大标题**：《${title}》
+* **风格**：十字小报 / 儿童学习报感
+* **文本要求**：大字、醒目、卡通手写体、彩色描边
+
+# 二、小报主体（中间主画面）
+画面中心是一幅 **卡通插画风的「${scene}」场景**：
+* **整体气氛**：明亮、温暖、积极
+* **构图**：物体边界清晰，方便对应文字，不要过于拥挤。
+
+# 三、必画物体与识字清单
+**请务必在画面中清晰绘制以下物体**：
+${vocab.map(v => `**${v.chinese}** (${v.pinyin})`).join('\n')}
+
+# 四、识字标注规则
+对上述清单中的物体，贴上中文识字标签：
+* **格式**：两行制（第一行拼音带声调，第二行简体汉字）
+* **样式**：彩色小贴纸风格，白底黑字，清晰可读
+
+# 五、画风参数
+* **风格**：儿童绘本风 + 识字小报风
+* **色彩**：高饱和、明快、温暖
+* **质量**：8k resolution, high detail`;
+        }
+
+        // 复制提示词
+        function copyPrompt() {
+            const prompt = document.getElementById('promptContent').textContent;
+            navigator.clipboard.writeText(prompt).then(() => {
+                alert('提示词已复制到剪贴板！');
+            });
+        }
+    </script>
+</body>
+</html>

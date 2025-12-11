@@ -1,0 +1,21 @@
+# 核心依赖
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# 进度条和美化
+tqdm>=4.66.0
+colorama>=0.4.6
+
+# 配置文件支持
+pyyaml>=6.0
+
+# Web版本依赖
+Flask>=2.3.0
+Werkzeug>=2.3.0
+
+# 可选：如果需要更好的命令行交互
+# inquirer>=2.10.0
+
+# 开发和测试依赖（可选）
+# pytest>=7.0.0
+# pytest-cov>=4.0.0

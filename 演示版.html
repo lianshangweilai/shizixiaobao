@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儿童识字小报生成器 - 演示版</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #0dcaf0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .hero-section h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInDown 1s ease;
+        }
+
+        .demo-button {
+            font-size: 1.2rem;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .step-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+        }
+
+        .demo-image {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+        }
+
+        .alert-custom {
+            border-left: 4px solid var(--primary-color);
+            background: #e7f3ff;
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="mb-4">
+                <i class="fas fa-book-open"></i> 儿童识字小报生成器
+            </h1>
+            <p class="lead mb-4">基于 AI 的儿童中文识字学习海报生成工具</p>
+            <button class="btn btn-light btn-lg demo-button" onclick="scrollToDemo()">
+                <i class="fas fa-play-circle"></i> 查看演示
+            </button>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">功能特点</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card feature-card">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-robot feature-icon"></i>
+                            <h5>AI 智能生成</h5>
+                            <p class="text-muted">基于先进的 Nano Banana Pro 模型，自动生成高质量识字海报</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-language feature-icon"></i>
+                            <h5>拼音标注</h5>
+                            <p class="text-muted">每个汉字都配有标准拼音，帮助儿童正确发音</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-palette feature-icon"></i>
+                            <h5>卡通风格</h5>
+                            <p class="text-muted">专为儿童设计的可爱画风，色彩鲜艳，吸引注意力</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">界面演示</h2>
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="demo-image">
+                        <h4 class="mb-3">参数设置</h4>
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label">主题/场景</label>
+                                <select class="form-select">
+                                    <option>超市</option>
+                                    <option>医院</option>
+                                    <option>公园</option>
+                                    <option>学校</option>
+                                    <option>动物园</option>
+                                    <option>火车站</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">小报标题</label>
+                                <input type="text" class="form-control" value="走进超市">
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="form-label">宽高比</label>
+                                    <select class="form-select">
+                                        <option>3:4 (A4竖版)</option>
+                                        <option>1:1</option>
+                                        <option>4:3</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">分辨率</label>
+                                    <select class="form-select">
+                                        <option>2K</option>
+                                        <option>1K</option>
+                                        <option>4K</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary w-100 mt-3" disabled>
+                                <i class="fas fa-magic"></i> 开始生成
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="demo-image">
+                        <h4 class="mb-3">生成效果</h4>
+                        <div class="text-center">
+                            <img src="https://via.placeholder.com/400x500/667eea/ffffff?text=识字小报示例"
+                                 class="img-fluid rounded mb-3" alt="示例图片">
+                            <h5 class="text-primary">《走进超市》</h5>
+                            <p class="text-muted">包含20个常用词汇，带拼音标注</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How to Use Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">如何使用</h2>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h5>安装依赖</h5>
+                        <p class="text-muted">确保已安装 Python 3.8+ 和必要的依赖包</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h5>配置API</h5>
+                        <p class="text-muted">获取 Kie AI API Key 并配置到 .env 文件</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h5>启动服务</h5>
+                        <p class="text-muted">运行启动脚本，启动 Web 服务器</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <h5>生成海报</h5>
+                        <p class="text-muted">在浏览器中访问，选择场景并生成</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert-custom mt-5">
+                <h5><i class="fas fa-info-circle"></i> 快速启动</h5>
+                <p class="mb-2">如果您已安装 Python，最简单的方法是：</p>
+                <div class="code-block">
+                    双击 "启动网页版.bat" 文件
+                </div>
+                <p>系统会自动检查环境并启动服务。</p>
+            </div>
+
+            <div class="alert alert-warning mt-4" role="alert">
+                <h5><i class="fas fa-exclamation-triangle"></i> 注意事项</h5>
+                <ul class="mb-0">
+                    <li>localhost:5000 需要先运行 Web 服务器才能访问</li>
+                    <li>图片生成需要 30-60 秒时间</li>
+                    <li>需要有效的 API Key 才能生成真实图片</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-4 bg-dark text-white text-center">
+        <div class="container">
+            <p class="mb-0">基于 Kie AI Nano Banana Pro API | 适合5-9岁儿童的识字学习工具</p>
+            <small>演示版本 - 实际使用需要配置环境</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function scrollToDemo() {
+            document.getElementById('demo').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
